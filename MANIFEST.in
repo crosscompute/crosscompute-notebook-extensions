@@ -1,0 +1,2 @@
+include *.cfg *.ini *.rst
+recursive-include crosscompute_notebook_extensions *.html *.css *.js *.ico *.jinja2
