@@ -3,9 +3,11 @@ define([
 ], function(jupyter) {
 
   function preview_tool() {
-    var notebook_path = jupyter.notebook.notebook_path;
+    var notebook = jupyter.notebook;
+    var notebook_path = notebook.notebook_path;
+    var base_url = notebook.base_url;
 
-    $.post('/crosscompute/preview', {
+    $.post(base_url + 'crosscompute/preview', {
       'notebook_path': notebook_path
     }, function() {
     });

@@ -6,7 +6,7 @@ import atexit
 from notebook.base.handlers import IPythonHandler
 from notebook.utils import url_path_join
 from os import kill
-# from psutil import process_iter
+from psutil import process_iter
 from signal import SIGINT
 from subprocess import Popen, PIPE
 from tornado import web
@@ -22,12 +22,17 @@ class ToolPreview(IPythonHandler):
 
 
 def stop_servers():
-    arguments = 'pgrep', '-f', 'crosscompute serve'
-    pgrep_process = Popen(arguments, stdout=PIPE)
-    process_ids = [int(x) for x in pgrep_process.stdout.read().split()]
-    for process_id in process_ids:
-        kill(process_id, SIGINT)
-    return len(process_ids)
+    # arguments = 'pgrep', '-f', 'crosscompute serve'
+    # pgrep_process = Popen(arguments, stdout=PIPE)
+    # process_ids = [int(x) for x in pgrep_process.stdout.read().split()]
+    # for process_id in process_ids:
+        # kill(process_id, SIGINT)
+    # return len(process_ids)
+    for p in process_iter():
+        if p.name() == 'crosscompute':
+            cmdline = p.cmdline()
+            if len(cmdline) > 3 and cmdline[2] == 'serve':
+                p.send_signal(SIGINT)
 
 
 def load_jupyter_server_extension(notebook_app):
