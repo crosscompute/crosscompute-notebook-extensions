@@ -1,17 +1,36 @@
 define([
-	'base/js/namespace',
-], function(jupyter) {
+  'base/js/namespace',
+  'base/js/dialog',
+], function(jupyter, dialog) {
 
   function preview_tool() {
     var notebook = jupyter.notebook;
     var notebook_path = notebook.notebook_path;
     var base_url = notebook.base_url;
 
-    $.post(base_url + 'crosscompute/preview', {
-      'notebook_path': notebook_path
-    }, function() {
+    var feedback_dialog = dialog.modal({
+      notebook: notebook,
+      keyboard_manager: notebook.keyboard_manager,
+      title: 'Preparing tool preview...',
+      body: 'Please be patient.'
     });
 
+    $.ajax({
+      type: 'post',
+      url: base_url + 'crosscompute/preview',
+      data: {
+        'notebook_path': notebook_path
+      },
+      success: function(d) {
+        feedback_dialog.modal('hide');
+        open(d.tool_url, '_blank');
+      },
+      error: function(jqXHR) {
+        var d = jqXHR.responseJSON;
+        feedback_dialog.find('.modal-title').text('Tool preview failed');
+        feedback_dialog.find('.modal-body').text(d.text);
+      }
+    });
   }
 
   function load_ipython_extension() {
@@ -31,9 +50,9 @@ define([
     jupyter.toolbar.add_buttons_group([
       preview_tool_action_name,
     ]);
-	}
+  }
 
-	return {
-		load_ipython_extension: load_ipython_extension
-	};
+  return {
+    load_ipython_extension: load_ipython_extension
+  };
 });

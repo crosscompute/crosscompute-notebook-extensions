@@ -3,36 +3,56 @@
 Adapted from prototypes by [Salah Ahmed](https://github.com/salah93)
 """
 import atexit
+import requests
+import simplejson as json
 from notebook.base.handlers import IPythonHandler
 from notebook.utils import url_path_join
-from os import kill
 from psutil import process_iter
+from requests.exceptions import ConnectionError
 from signal import SIGINT
 from subprocess import Popen, PIPE
+from time import sleep
 from tornado import web
 
 
 class ToolPreview(IPythonHandler):
 
     def post(self):
+        d = {}
         stop_servers()
         notebook_path = self.get_argument('notebook_path')
-        arguments = 'crosscompute', 'serve', notebook_path
-        Popen(arguments)
+        arguments = 'crosscompute', 'serve', notebook_path, '--without_browser'
+        process = Popen(arguments, stderr=PIPE)
+
+        tool_url = 'http://localhost:4444'
+        for x in range(5):
+            try:
+                requests.get(tool_url)
+            except ConnectionError:
+                sleep(1)
+            else:
+                status_code = 200
+                d['tool_url'] = tool_url
+                break
+            if process.poll():
+                status_code = 400
+                d['text'] = process.stderr.read()
+        else:
+            status_code = 400
+            d['text'] = 'Timed out while waiting for server'
+
+        self.set_header('Content-Type', 'application/json')
+        self.set_status(status_code)
+        self.write(json.dumps(d))
 
 
 def stop_servers():
-    # arguments = 'pgrep', '-f', 'crosscompute serve'
-    # pgrep_process = Popen(arguments, stdout=PIPE)
-    # process_ids = [int(x) for x in pgrep_process.stdout.read().split()]
-    # for process_id in process_ids:
-        # kill(process_id, SIGINT)
-    # return len(process_ids)
-    for p in process_iter():
-        if p.name() == 'crosscompute':
-            cmdline = p.cmdline()
-            if len(cmdline) > 3 and cmdline[2] == 'serve':
-                p.send_signal(SIGINT)
+    for process in process_iter():
+        if process.name() != 'crosscompute':
+            continue
+        x = process.cmdline()
+        if len(x) > 3 and x[2] == 'serve':
+            process.send_signal(SIGINT)
 
 
 def load_jupyter_server_extension(notebook_app):
