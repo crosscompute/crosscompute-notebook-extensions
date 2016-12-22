@@ -15,6 +15,8 @@ define([
       body: 'Please be patient.'
     });
 
+    notebook.save_notebook();
+
     $.ajax({
       type: 'post',
       url: base_url + 'crosscompute/preview',

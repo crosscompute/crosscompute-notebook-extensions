@@ -2,6 +2,7 @@ import nbconvert
 from collections import OrderedDict
 from copy import deepcopy
 from crosscompute.configurations import find_tool_definition
+from crosscompute.exceptions import CrossComputeError
 from crosscompute.extensions import ToolExtension
 from crosscompute.scripts import corral_arguments
 from crosscompute.types import RESERVED_ARGUMENT_NAMES
@@ -43,8 +44,11 @@ def prepare_script_folder(script_folder, notebook, tool_name):
 
 def load_tool_arguments(notebook):
     g, l = OrderedDict(), OrderedDict()
-    block_content = notebook['cells'][0]['source']
-    exec(block_content, g, l)
+    try:
+        cell = notebook['cells'][0]
+    except IndexError:
+        raise CrossComputeError('Cannot convert empty notebook')
+    exec(cell['source'], g, l)
     return l
 
 

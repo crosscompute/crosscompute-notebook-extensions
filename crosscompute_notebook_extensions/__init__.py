@@ -37,9 +37,10 @@ class ToolPreview(IPythonHandler):
             if process.poll():
                 status_code = 400
                 d['text'] = process.stderr.read()
+                break
         else:
             status_code = 400
-            d['text'] = 'Timed out while waiting for server'
+            d['text'] = process.stderr.read()
 
         self.set_header('Content-Type', 'application/json')
         self.set_status(status_code)
