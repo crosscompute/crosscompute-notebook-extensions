@@ -15,7 +15,7 @@ from time import sleep
 from tornado import web
 
 
-TOOL_PORT = 4444
+SETTINGS = {}
 
 
 class ToolPreview(IPythonHandler):
@@ -23,22 +23,21 @@ class ToolPreview(IPythonHandler):
     def get(self):
         stop_servers()
         notebook_path = self.get_argument('notebook_path')
-        arguments = (
+        tool_host, tool_port = SETTINGS['host'], SETTINGS['port']
+        process = Popen((
             'crosscompute', 'serve', notebook_path, '--without_browser',
-            '--port', str(TOOL_PORT))
-        process = Popen(arguments, stderr=PIPE)
-
+            '--host', tool_host, '--port', str(tool_port)), stderr=PIPE)
         d = {}
         for x in range(5):
             try:
-                requests.get('http://localhost:%s' % TOOL_PORT)
+                requests.get('http://localhost:%s' % tool_port)
             except ConnectionError:
                 sleep(1)
             else:
                 status_code = 200
                 d['tool_url'] = '%s://%s:%s' % (
                     self.request.protocol, self.request.host.split(':')[0],
-                    TOOL_PORT)
+                    tool_port)
                 break
             if process.poll():
                 status_code = 400
@@ -62,6 +61,9 @@ def stop_servers():
 
 
 def load_jupyter_server_extension(notebook_app):
+    settings = notebook_app.config.get('CrossCompute', {})
+    SETTINGS['port'] = int(settings.get('port', 4444))
+    SETTINGS['host'] = settings.get('host', '127.0.0.1')
     base_url = notebook_app.base_url
     host_pattern = r'.*$'
     if notebook_app.password:
