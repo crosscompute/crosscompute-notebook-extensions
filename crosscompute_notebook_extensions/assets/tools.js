@@ -16,22 +16,22 @@ define([
     });
 
     notebook.save_notebook();
-
-    $.ajax({
-      type: 'post',
-      url: base_url + 'crosscompute/preview',
-      data: {
-        'notebook_path': notebook_path
-      },
-      success: function(d) {
-        feedback_dialog.modal('hide');
-        open(d.tool_url, '_blank');
-      },
-      error: function(jqXHR) {
-        var d = jqXHR.responseJSON;
-        feedback_dialog.find('.modal-title').text('Tool preview failed');
-        feedback_dialog.find('.modal-body').text(d.text);
-      }
+    notebook.events.on('notebook_saved.Notebook', function () {
+      $.ajax({
+        url: base_url + 'crosscompute/preview.json',
+        data: {
+          'notebook_path': notebook_path
+        },
+        success: function(d) {
+          feedback_dialog.modal('hide');
+          open(d.tool_url, '_blank');
+        },
+        error: function(jqXHR) {
+          var d = jqXHR.responseJSON;
+          feedback_dialog.find('.modal-title').text('Tool preview failed');
+          feedback_dialog.find('.modal-body').text(d.text);
+        }
+      });
     });
   }
 

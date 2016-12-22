@@ -17,7 +17,7 @@ from tornado import web
 
 class ToolPreview(IPythonHandler):
 
-    def post(self):
+    def get(self):
         d = {}
         stop_servers()
         notebook_path = self.get_argument('notebook_path')
@@ -60,9 +60,9 @@ def load_jupyter_server_extension(notebook_app):
     base_url = notebook_app.base_url
     host_pattern = r'.*$'
     if notebook_app.password:
-        ToolPreview.post = web.authenticated(ToolPreview.post)
+        ToolPreview.get = web.authenticated(ToolPreview.get)
     notebook_app.web_app.add_handlers(host_pattern, [
-        (url_path_join(base_url, 'crosscompute', 'preview'), ToolPreview),
+        (url_path_join(base_url, 'crosscompute', 'preview.json'), ToolPreview),
     ])
     atexit.register(stop_servers)
 
