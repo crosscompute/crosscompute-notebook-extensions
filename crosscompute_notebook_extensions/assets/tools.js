@@ -52,6 +52,9 @@ define([
     jupyter.toolbar.add_buttons_group([
       preview_tool_action_name,
     ]);
+
+    var $toolbar = $('#maintoolbar-container');
+    $toolbar.find('button[data-jupyter-action="' + preview_tool_action_name + '"]').css('background-color', '#5cb85c');
   }
 
   return {

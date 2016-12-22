@@ -6,10 +6,11 @@ from crosscompute.exceptions import CrossComputeError
 from crosscompute.extensions import ToolExtension
 from crosscompute.scripts import corral_arguments
 from crosscompute.types import RESERVED_ARGUMENT_NAMES
+from invisibleroads_macros.configuration import make_absolute_paths
 from invisibleroads_macros.disk import (
-    copy_text, link_path, make_enumerated_folder, HOME_FOLDER)
+    copy_text, make_enumerated_folder, HOME_FOLDER)
 from nbconvert.exporters import PythonExporter
-from os.path import join
+from os.path import abspath, dirname, join
 from six import string_types
 
 from .macros import get_tool_name, load_notebook
@@ -20,16 +21,18 @@ class IPythonNotebookTool(ToolExtension):
     @classmethod
     def prepare_tool_definition(self, path):
         tool_name = get_tool_name(path)
-        notebook = load_notebook(path)
         script_folder = make_enumerated_folder(join(
             HOME_FOLDER, '.crosscompute', tool_name, 'tools'))
-        prepare_script_folder(script_folder, notebook, tool_name)
+        prepare_script_folder(script_folder, path, tool_name)
         return find_tool_definition(script_folder, default_tool_name=tool_name)
 
 
-def prepare_script_folder(script_folder, notebook, tool_name):
+def prepare_script_folder(script_folder, notebook_path, tool_name):
+    notebook = load_notebook(notebook_path)
+    notebook_folder = dirname(abspath(notebook_path))
     tool_arguments = load_tool_arguments(notebook)
-    tool_arguments = corral_arguments(script_folder, tool_arguments, link_path)
+    tool_arguments = make_absolute_paths(tool_arguments, notebook_folder)
+    tool_arguments = corral_arguments(script_folder, tool_arguments)
     # Save script
     script_content = prepare_script(tool_arguments, notebook)
     script_name = 'run.py'
