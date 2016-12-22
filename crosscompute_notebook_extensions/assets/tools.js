@@ -16,7 +16,7 @@ define([
     });
 
     notebook.save_notebook();
-    notebook.events.on('notebook_saved.Notebook', function () {
+    notebook.events.one('notebook_saved.Notebook', function () {
       $.ajax({
         url: base_url + 'crosscompute/preview.json',
         data: {
