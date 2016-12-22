@@ -15,24 +15,30 @@ from time import sleep
 from tornado import web
 
 
+TOOL_PORT = 4444
+
+
 class ToolPreview(IPythonHandler):
 
     def get(self):
-        d = {}
         stop_servers()
         notebook_path = self.get_argument('notebook_path')
-        arguments = 'crosscompute', 'serve', notebook_path, '--without_browser'
+        arguments = (
+            'crosscompute', 'serve', notebook_path, '--without_browser',
+            '--port', str(TOOL_PORT))
         process = Popen(arguments, stderr=PIPE)
 
-        tool_url = 'http://localhost:4444'
+        d = {}
         for x in range(5):
             try:
-                requests.get(tool_url)
+                requests.get('http://localhost:%s' % TOOL_PORT)
             except ConnectionError:
                 sleep(1)
             else:
                 status_code = 200
-                d['tool_url'] = tool_url
+                d['tool_url'] = '%s://%s:%s' % (
+                    self.request.protocol, self.request.host.split(':')[0],
+                    TOOL_PORT)
                 break
             if process.poll():
                 status_code = 400
@@ -41,7 +47,6 @@ class ToolPreview(IPythonHandler):
         else:
             status_code = 400
             d['text'] = process.stderr.read()
-
         self.set_header('Content-Type', 'application/json')
         self.set_status(status_code)
         self.write(json.dumps(d))
