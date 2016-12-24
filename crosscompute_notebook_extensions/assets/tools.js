@@ -3,11 +3,15 @@ define([
   'base/js/dialog',
 ], function(jupyter, dialog) {
 
+  function rewrite_dialog(dialog, title, body) {
+      dialog.find('.modal-title').text(title);
+      dialog.find('.modal-body').html(body);
+  }
+
   function preview_tool() {
     var notebook = jupyter.notebook;
     var notebook_path = notebook.notebook_path;
     var base_url = notebook.base_url;
-
     var feedback_dialog = dialog.modal({
       notebook: notebook,
       keyboard_manager: notebook.keyboard_manager,
@@ -23,13 +27,11 @@ define([
           'notebook_path': notebook_path
         },
         success: function(d) {
-          feedback_dialog.modal('hide');
-          open(d.tool_url, '_blank');
+          rewrite_dialog(feedback_dialog, 'Tool preview succeeded', '<p>Use this link to access your tool preview.</p><p><a href="X" target="_blank">X</a></p><p>Note that stopping the notebook server will also stop the tool preview server.</p>'.replace(/X/g, d.tool_url));
         },
         error: function(jqXHR) {
           var d = jqXHR.responseJSON;
-          feedback_dialog.find('.modal-title').text('Tool preview failed');
-          feedback_dialog.find('.modal-body').text(d.text);
+          rewrite_dialog(feedback_dialog, 'Tool preview failed', d.text);
         }
       });
     });
@@ -60,4 +62,5 @@ define([
   return {
     load_ipython_extension: load_ipython_extension
   };
+
 });

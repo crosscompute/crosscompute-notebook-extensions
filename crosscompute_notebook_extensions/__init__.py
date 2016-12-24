@@ -18,7 +18,7 @@ from tornado import web
 SETTINGS = {}
 
 
-class ToolPreview(IPythonHandler):
+class ToolPreviewJson(IPythonHandler):
 
     def get(self):
         stop_servers()
@@ -64,13 +64,16 @@ def load_jupyter_server_extension(notebook_app):
     settings = notebook_app.config.get('CrossCompute', {})
     SETTINGS['port'] = int(settings.get('port', 4444))
     SETTINGS['host'] = settings.get('host', '127.0.0.1')
-    base_url = notebook_app.base_url
+    # Configure routes
+    base_url = url_path_join(notebook_app.base_url, 'crosscompute')
     host_pattern = r'.*$'
     if notebook_app.password:
-        ToolPreview.get = web.authenticated(ToolPreview.get)
-    notebook_app.web_app.add_handlers(host_pattern, [
-        (url_path_join(base_url, 'crosscompute', 'preview.json'), ToolPreview),
+        ToolPreviewJson.get = web.authenticated(ToolPreviewJson.get)
+    web_app = notebook_app.web_app
+    web_app.add_handlers(host_pattern, [
+        (url_path_join(base_url, 'preview.json'), ToolPreviewJson),
     ])
+    # Set exit hooks
     atexit.register(stop_servers)
 
 
