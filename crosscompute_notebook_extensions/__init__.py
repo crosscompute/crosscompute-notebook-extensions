@@ -14,8 +14,7 @@ from subprocess import Popen, PIPE
 from time import sleep
 from tornado import web
 
-
-SETTINGS = {}
+from .settings import SETTINGS, TOOL_HOST, TOOL_PORT
 
 
 class ToolPreviewJson(IPythonHandler):
@@ -23,7 +22,7 @@ class ToolPreviewJson(IPythonHandler):
     def get(self):
         stop_servers()
         notebook_path = self.get_argument('notebook_path')
-        tool_host, tool_port = SETTINGS['host'], SETTINGS['port']
+        tool_host, tool_port = SETTINGS['tool_host'], SETTINGS['tool_port']
         process = Popen((
             'crosscompute', 'serve', notebook_path, '--without_browser',
             '--host', tool_host, '--port', str(tool_port)), stderr=PIPE)
@@ -62,8 +61,8 @@ def stop_servers():
 
 def load_jupyter_server_extension(notebook_app):
     settings = notebook_app.config.get('CrossCompute', {})
-    SETTINGS['port'] = int(settings.get('port', 4444))
-    SETTINGS['host'] = settings.get('host', '127.0.0.1')
+    SETTINGS['tool_host'] = settings.get('host', TOOL_HOST)
+    SETTINGS['tool_port'] = int(settings.get('port', TOOL_PORT))
     # Configure routes
     base_url = url_path_join(notebook_app.base_url, 'crosscompute')
     host_pattern = r'.*$'
