@@ -22,10 +22,12 @@ class ToolPreviewJson(IPythonHandler):
     def get(self):
         stop_servers()
         notebook_path = self.get_argument('notebook_path')
-        tool_host, tool_port = SETTINGS['tool_host'], SETTINGS['tool_port']
+        tool_port = SETTINGS['tool_port']
         process = Popen((
             'crosscompute', 'serve', notebook_path, '--without_browser',
-            '--host', tool_host, '--port', str(tool_port)), stderr=PIPE)
+            '--host', SETTINGS['tool_host'],
+            '--port', str(tool_port),
+            '--base_url', SETTINGS['tool_base_url']), stderr=PIPE)
         d = {}
         for x in range(5):
             try:
@@ -34,9 +36,7 @@ class ToolPreviewJson(IPythonHandler):
                 sleep(1)
             else:
                 status_code = 200
-                d['tool_url'] = '%s://%s:%s' % (
-                    self.request.protocol, self.request.host.split(':')[0],
-                    tool_port)
+                d['tool_url'] = self._get_tool_url()
                 break
             if process.poll():
                 status_code = 400
@@ -49,6 +49,16 @@ class ToolPreviewJson(IPythonHandler):
         self.set_status(status_code)
         self.write(json.dumps(d))
 
+    def _get_tool_url(self):
+        tool_base_url = SETTINGS['tool_base_url']
+        if tool_base_url == '/':
+            request_host = self.request.host.split(':')[0]
+            tool_port = SETTINGS['tool_port']
+            tool_url = '//%s:%s' % (request_host, tool_port)
+        else:
+            tool_url = tool_base_url
+        return tool_url
+
 
 def stop_servers():
     for process in process_iter():
@@ -60,17 +70,21 @@ def stop_servers():
 
 
 def load_jupyter_server_extension(notebook_app):
+    base_url = notebook_app.base_url
+    namespace_url = url_path_join(base_url, 'crosscompute')
+    preview_url = url_path_join(namespace_url, 'preview')
+    # Configure settings
     settings = notebook_app.config.get('CrossCompute', {})
     SETTINGS['tool_host'] = settings.get('host', TOOL_HOST)
     SETTINGS['tool_port'] = int(settings.get('port', TOOL_PORT))
+    SETTINGS['tool_base_url'] = '/' if base_url == '/' else preview_url
     # Configure routes
-    base_url = url_path_join(notebook_app.base_url, 'crosscompute')
     host_pattern = r'.*$'
     if notebook_app.password:
         ToolPreviewJson.get = web.authenticated(ToolPreviewJson.get)
     web_app = notebook_app.web_app
     web_app.add_handlers(host_pattern, [
-        (url_path_join(base_url, 'preview.json'), ToolPreviewJson),
+        (preview_url + '.json', ToolPreviewJson),
     ])
     # Set exit hooks
     atexit.register(stop_servers)

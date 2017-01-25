@@ -27,7 +27,7 @@ define([
           'notebook_path': notebook_path
         },
         success: function(d) {
-          rewrite_dialog(feedback_dialog, 'Tool preview succeeded', '<p>Use this link to access your tool preview.</p><p><a href="X" target="_blank">X</a></p><p>Note that stopping the notebook server will also stop the tool preview server.</p>'.replace(/X/g, d.tool_url));
+          rewrite_dialog(feedback_dialog, 'Tool preview succeeded', '<p><a href="X" target="_blank">Click here to access your tool preview</a>.</p><p>Note that stopping the notebook server will also stop the tool preview server.</p>'.replace(/X/g, d.tool_url));
         },
         error: function(jqXHR) {
           var d = jqXHR.responseJSON;
