@@ -11,7 +11,7 @@ DESCRIPTION = '\n\n'.join(open(join(FOLDER, x)).read().strip() for x in [
     'README.rst', 'CHANGES.rst'])
 setup(
     name='crosscompute-notebook-extensions',
-    version='0.2.5',
+    version='0.2.6',
     description='CrossCompute extensions for Jupyter Notebook',
     long_description=DESCRIPTION,
     classifiers=[
@@ -28,9 +28,9 @@ setup(
         'pytest-runner',
     ],
     install_requires=[
-        'crosscompute>=0.6.2',
-        'crosscompute-types>=0.6.2',
-        'notebook>=4.3.0',
+        'crosscompute>=0.6.3',
+        'crosscompute-types>=0.6.3',
+        'notebook>=4.3.1',
         'psutil',
         'requests',
         'simplejson',
