@@ -8,9 +8,12 @@ Installation
 ::
 
     pip install crosscompute-notebook-extensions
-    jupyter nbextension install --sys-prefix --py crosscompute_notebook_extensions
-    jupyter nbextension enable --sys-prefix --py crosscompute_notebook_extensions
-    jupyter serverextension enable --sys-prefix --py crosscompute_notebook_extensions
+    jupyter nbextension install \
+        --sys-prefix --py crosscompute_notebook_extensions
+    jupyter nbextension enable \
+        --sys-prefix --py crosscompute_notebook_extensions
+    jupyter serverextension enable \
+        --sys-prefix --py crosscompute_notebook_extensions
 
 Usage via command-line
 ----------------------
