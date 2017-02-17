@@ -3,16 +3,16 @@ define([
   'base/js/dialog',
 ], function(jupyter, dialog) {
 
-  function rewrite_dialog(dialog, title, body) {
-      dialog.find('.modal-title').text(title);
-      dialog.find('.modal-body').html(body);
+  function rewrite_modal($modal, title, body) {
+      $modal.find('.modal-title').text(title);
+      $modal.find('.modal-body').html(body);
   }
 
   function preview_tool() {
     var notebook = jupyter.notebook;
     var notebook_path = notebook.notebook_path;
     var base_url = notebook.base_url;
-    var feedback_dialog = dialog.modal({
+    var $feedback_dialog = dialog.modal({
       notebook: notebook,
       keyboard_manager: notebook.keyboard_manager,
       title: 'Preparing tool preview...',
@@ -27,11 +27,11 @@ define([
           'notebook_path': notebook_path
         },
         success: function(d) {
-          rewrite_dialog(feedback_dialog, 'Tool preview succeeded', '<p><a href="X" target="_blank">Click here to access your tool preview</a>.</p><p>Note that stopping the notebook server will also stop the tool preview server.</p>'.replace(/X/g, d.tool_url));
+          rewrite_modal($feedback_dialog, 'Tool preview succeeded', '<p><a href="X" target="_blank">Click here to access your tool preview</a>.</p><p>Note that stopping the notebook server will also stop the tool preview server.</p>'.replace(/X/g, d.tool_url));
         },
         error: function(jqXHR) {
           var d = jqXHR.responseJSON;
-          rewrite_dialog(feedback_dialog, 'Tool preview failed', d.text);
+          rewrite_modal($feedback_dialog, 'Tool preview failed', d.text);
         }
       });
     });
