@@ -29,7 +29,7 @@ class ToolPreviewJson(IPythonHandler):
             '--port', str(tool_port),
             '--base_url', SETTINGS['tool_base_url']), stderr=PIPE)
         d = {}
-        for x in range(5):
+        for x in range(10):
             try:
                 requests.get('http://localhost:%s' % tool_port)
             except ConnectionError:
@@ -44,7 +44,6 @@ class ToolPreviewJson(IPythonHandler):
                 break
         else:
             status_code = 400
-            d['text'] = process.stderr.read()
         self.set_header('Content-Type', 'application/json')
         self.set_status(status_code)
         self.write(json.dumps(d))

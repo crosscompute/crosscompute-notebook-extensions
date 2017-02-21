@@ -31,7 +31,8 @@ define([
         },
         error: function(jqXHR) {
           var d = jqXHR.responseJSON;
-          rewrite_modal($feedback_dialog, 'Tool preview failed', d.text);
+          var x = d.text ? '<pre>' + d.text + '</pre>' : 'Unable to connect to tool server';
+          rewrite_modal($feedback_dialog, 'Tool preview failed', x);
         }
       });
     });

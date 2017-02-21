@@ -33,25 +33,42 @@ def prepare_script_folder(script_folder, notebook_path, tool_name):
     tool_arguments = load_tool_arguments(notebook)
     tool_arguments = make_absolute_paths(tool_arguments, notebook_folder)
     tool_arguments = corral_arguments(script_folder, tool_arguments)
+    kw = {}
     # Save script
     script_content = prepare_script(tool_arguments, notebook)
     script_name = 'run.py'
     copy_text(join(script_folder, script_name), script_content)
+    # Save tool template
+    cell = notebook['cells'][0]
+    if cell['cell_type'] == u'markdown':
+        template_name = 'tool.md'
+        copy_text(join(script_folder, template_name), cell['source'])
+        kw['tool_template_path'] = template_name
+    # Save result template
+    cell = notebook['cells'][-1]
+    if cell['cell_type'] == u'markdown':
+        template_name = 'result.md'
+        copy_text(join(script_folder, template_name), cell['source'])
+        kw['result_template_path'] = template_name
     # Save configuration
     command_name = notebook['metadata']['kernelspec']['name']
     configuration_content = prepare_configuration(
-        tool_name, command_name, script_name, tool_arguments)
+        tool_name, command_name, script_name, tool_arguments, **kw)
     configuration_name = 'cc.ini'
     copy_text(join(script_folder, configuration_name), configuration_content)
 
 
 def load_tool_arguments(notebook):
     g, l = OrderedDict(), OrderedDict()
+    for cell in notebook['cells']:
+        if cell['cell_type'] == u'code':
+            break
+    else:
+        raise CrossComputeError('cannot load a tool from an empty notebook')
     try:
-        cell = notebook['cells'][0]
-    except IndexError:
-        raise CrossComputeError('Cannot convert empty notebook')
-    exec(cell['source'], g, l)
+        exec(cell['source'], g, l)
+    except Exception as e:
+        raise CrossComputeError(e)
     return l
 
 
@@ -73,7 +90,8 @@ def prepare_script(tool_arguments, notebook):
 
 
 def prepare_configuration(
-        tool_name, command_name, script_name, tool_arguments):
+        tool_name, command_name, script_name, tool_arguments,
+        tool_template_path=None, result_template_path=None):
     configuration_lines = []
     configuration_lines.append('[crosscompute %s]' % tool_name)
     configuration_lines.append('command_template = %s %s %s' % (
@@ -83,5 +101,11 @@ def prepare_configuration(
         if k in RESERVED_ARGUMENT_NAMES:
             continue
         configuration_lines.append('%s = %s' % (k, v))
+    if tool_template_path:
+        configuration_lines.append(
+            'tool_template_path = %s' % tool_template_path)
+    if result_template_path:
+        configuration_lines.append(
+            'result_template_path = %s' % result_template_path)
     configuration_content = '\n'.join(configuration_lines)
     return configuration_content

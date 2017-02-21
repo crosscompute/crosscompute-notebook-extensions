@@ -1,11 +1,20 @@
+0.4
+---
+- Save tool template if first cell is markdown
+- Save result template if last cell is markdown
+
+0.3
+---
+- Support custom base_url
+
 0.2
 ---
-- Added example notebooks
-- Added ToolPreview redirect
-- Fixed Python 3 support
-- Replaced pgrep with psutil to support non-POSIX systems
+- Add example notebooks
+- Add ToolPreview redirect
+- Fix Python 3 support
+- Replace pgrep with psutil to support non-POSIX systems
 
 0.1
 ---
-- Added ToolPreview extension
-- Extracted notebook support from crosscompute package
+- Add ToolPreview extension
+- Extracte notebook support from crosscompute package
