@@ -60,13 +60,11 @@ def prepare_script_folder(script_folder, notebook_path, tool_name):
 
 def load_tool_arguments(notebook):
     g, l = OrderedDict(), OrderedDict()
-    for cell in notebook['cells']:
-        if cell['cell_type'] == u'code':
-            break
-    else:
-        raise CrossComputeError('cannot load a tool from an empty notebook')
+    code_cells = get_code_cells(notebook)
+    if not code_cells:
+        raise CrossComputeError('cannot make a tool without code')
     try:
-        exec(cell['source'], g, l)
+        exec(code_cells[0]['source'], g, l)
     except Exception as e:
         raise CrossComputeError(e)
     return l
@@ -84,9 +82,18 @@ def prepare_script(tool_arguments, notebook):
         script_lines.append(line_template.format(
             argument_name=k, i=index + 1, value_type=type(v).__name__))
     notebook = deepcopy(notebook)
-    notebook.cells[0]['source'] = '\n'.join(script_lines)
+    code_cells = get_code_cells(notebook)
+    code_cells[0]['source'] = '\n'.join(script_lines)
     script_content = nbconvert.export(PythonExporter, notebook)[0]
     return script_content
+
+
+def get_code_cells(notebook):
+    code_cells = []
+    for cell in notebook['cells']:
+        if cell['cell_type'] == u'code':
+            code_cells.append(cell)
+    return code_cells
 
 
 def prepare_configuration(
