@@ -9,6 +9,7 @@ from crosscompute.types import RESERVED_ARGUMENT_NAMES
 from invisibleroads_macros.configuration import make_absolute_paths
 from invisibleroads_macros.disk import (
     copy_text, make_enumerated_folder, HOME_FOLDER)
+from invisibleroads_macros.text import unicode_safely
 from nbconvert.exporters import PythonExporter
 from os.path import abspath, dirname, join
 from six import string_types
@@ -67,7 +68,10 @@ def load_tool_arguments(notebook):
         exec(code_cells[0]['source'], g, l)
     except Exception as e:
         raise CrossComputeError(e)
-    return l
+    d = OrderedDict()
+    for k, v in l.items():
+        d[unicode_safely(k)] = unicode_safely(v)
+    return d
 
 
 def prepare_script(tool_arguments, notebook):
