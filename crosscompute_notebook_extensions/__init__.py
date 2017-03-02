@@ -24,10 +24,11 @@ class ToolPreviewJson(IPythonHandler):
         notebook_path = self.get_argument('notebook_path')
         tool_port = SETTINGS['tool_port']
         process = Popen((
-            'crosscompute', 'serve', notebook_path, '--without_browser',
+            'crosscompute', 'serve', notebook_path,
             '--host', SETTINGS['tool_host'],
             '--port', str(tool_port),
-            '--base_url', SETTINGS['tool_base_url']), stderr=PIPE)
+            '--base_url', SETTINGS['tool_base_url'],
+            '--without_browser', '--quietly'), stderr=PIPE)
         d = {}
         for x in range(10):
             try:
