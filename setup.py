@@ -28,8 +28,8 @@ setup(
         'pytest-runner',
     ],
     install_requires=[
-        'crosscompute>=0.6.7.1',
-        'crosscompute-types>=0.6.7',
+        'crosscompute>=0.6.8',
+        'crosscompute-types>=0.6.8',
         'notebook>=4.4.1',
         'psutil',
         'requests',
