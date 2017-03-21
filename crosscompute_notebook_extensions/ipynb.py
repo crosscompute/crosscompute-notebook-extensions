@@ -10,6 +10,7 @@ from invisibleroads_macros.configuration import make_absolute_paths
 from invisibleroads_macros.disk import (
     copy_text, make_enumerated_folder, HOME_FOLDER)
 from invisibleroads_macros.text import unicode_safely
+from jinja2 import Environment, PackageLoader
 from nbconvert.exporters import PythonExporter
 from os.path import abspath, dirname, join
 from six import string_types
@@ -17,24 +18,29 @@ from six import string_types
 from .macros import get_tool_name, load_notebook
 
 
+JINJA2_ENVIRONMENT = Environment(loader=PackageLoader(
+    'crosscompute_notebook_extensions'))
+
+
 class IPythonNotebookTool(ToolExtension):
 
     @classmethod
-    def prepare_tool_definition(self, path):
+    def prepare_tool_definition(self, path, debug=False):
         tool_name = get_tool_name(path)
         script_folder = make_enumerated_folder(join(
             HOME_FOLDER, '.crosscompute', tool_name, 'tools'))
-        prepare_script_folder(script_folder, path, tool_name)
+        prepare_script_folder(script_folder, path, tool_name, debug)
         return find_tool_definition(script_folder, default_tool_name=tool_name)
 
 
-def prepare_script_folder(script_folder, notebook_path, tool_name):
+def prepare_script_folder(
+        script_folder, notebook_path, tool_name, debug=False):
     notebook = load_notebook(notebook_path)
     notebook_folder = dirname(abspath(notebook_path))
     tool_arguments = load_tool_arguments(notebook)
     tool_arguments = make_absolute_paths(tool_arguments, notebook_folder)
     tool_arguments = corral_arguments(script_folder, tool_arguments)
-    kw = {}
+    kw = {'debug': debug}
     # Save script
     script_content = prepare_script(tool_arguments, notebook)
     script_name = 'run.py'
@@ -85,6 +91,8 @@ def prepare_script(tool_arguments, notebook):
             line_template = '{argument_name} = {value_type}(argv[{i}])'
         script_lines.append(line_template.format(
             argument_name=k, i=index + 1, value_type=type(v).__name__))
+    script_lines.extend(['\n'] + JINJA2_ENVIRONMENT.get_template(
+        'python.jinja2').render().splitlines())
     notebook = deepcopy(notebook)
     code_cells = get_code_cells(notebook)
     code_cells[0]['source'] = '\n'.join(script_lines)
@@ -102,7 +110,7 @@ def get_code_cells(notebook):
 
 def prepare_configuration(
         tool_name, command_name, script_name, tool_arguments,
-        tool_template_path=None, result_template_path=None):
+        tool_template_path=None, result_template_path=None, debug=False):
     configuration_lines = []
     configuration_lines.append('[crosscompute %s]' % tool_name)
     configuration_lines.append('command_template = %s %s %s' % (
@@ -118,5 +126,10 @@ def prepare_configuration(
     if result_template_path:
         configuration_lines.append(
             'result_template_path = %s' % result_template_path)
+    if debug:
+        configuration_lines.extend([
+            'show_standard_error = True',
+            'show_standard_output = True',
+        ])
     configuration_content = '\n'.join(configuration_lines)
     return configuration_content

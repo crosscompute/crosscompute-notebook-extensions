@@ -1,0 +1,11 @@
+def get_ipython():
+
+    class InteractiveShell(object):
+
+        def getoutput(cmd, split=True, depth=0):
+            return []
+
+        def magic(self, arg_s):
+            return ''
+
+    return InteractiveShell()

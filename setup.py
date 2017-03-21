@@ -28,8 +28,9 @@ setup(
         'pytest-runner',
     ],
     install_requires=[
-        'crosscompute>=0.6.8',
+        'crosscompute>=0.6.8.2',
         'crosscompute-types>=0.6.8',
+        'jinja2',
         'notebook>=4.4.1',
         'psutil',
         'requests',

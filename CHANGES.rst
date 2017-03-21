@@ -1,5 +1,7 @@
 0.4
 ---
+- Debug when previewing tool directly from notebook
+- Ignore IPython magic
 - Improve unicode support
 - Save tool template if first cell is markdown
 - Save result template if last cell is markdown
