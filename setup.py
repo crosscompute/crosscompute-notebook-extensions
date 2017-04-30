@@ -19,7 +19,7 @@ setup(
     ],
     author='CrossCompute Inc',
     author_email='support@crosscompute.com',
-    url='https://crosscompute.com/docs',
+    url='https://crosscompute.com/developers',
     keywords='web crosscompute jupyter',
     packages=find_packages(),
     include_package_data=True,
