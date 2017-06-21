@@ -1,4 +1,1 @@
-TOOL_HOST = '127.0.0.1'
-TOOL_PORT = 4444
-
-SETTINGS = {}
+S = {}

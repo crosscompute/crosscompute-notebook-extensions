@@ -14,7 +14,7 @@ from subprocess import Popen, PIPE
 from time import sleep
 from tornado import web
 
-from .settings import SETTINGS, TOOL_HOST, TOOL_PORT
+from .settings import S
 
 
 class ToolPreviewJson(IPythonHandler):
@@ -22,12 +22,12 @@ class ToolPreviewJson(IPythonHandler):
     def get(self):
         stop_servers()
         notebook_path = self.get_argument('notebook_path')
-        tool_port = SETTINGS['tool_port']
+        tool_port = S['tool_port']
         process = Popen((
             'crosscompute', 'serve', notebook_path,
-            '--host', SETTINGS['tool_host'],
+            '--host', S['tool_host'],
             '--port', str(tool_port),
-            '--base_url', SETTINGS['tool_base_url'],
+            '--base_url', S['tool_base_url'],
             '--debug', '--without_browser', '--quietly'), stderr=PIPE)
         d = {}
         for x in range(10):
@@ -50,10 +50,10 @@ class ToolPreviewJson(IPythonHandler):
         self.write(json.dumps(d))
 
     def _get_tool_url(self):
-        tool_base_url = SETTINGS['tool_base_url']
+        tool_base_url = S['tool_base_url']
         if tool_base_url == '/':
             request_host = self.request.host.split(':')[0]
-            tool_port = SETTINGS['tool_port']
+            tool_port = S['tool_port']
             tool_url = '//%s:%s' % (request_host, tool_port)
         else:
             tool_url = tool_base_url
@@ -75,9 +75,9 @@ def load_jupyter_server_extension(notebook_app):
     preview_url = url_path_join(namespace_url, 'preview')
     # Configure settings
     settings = notebook_app.config.get('CrossCompute', {})
-    SETTINGS['tool_host'] = settings.get('host', TOOL_HOST)
-    SETTINGS['tool_port'] = int(settings.get('port', TOOL_PORT))
-    SETTINGS['tool_base_url'] = '/' if base_url == '/' else preview_url
+    S['tool_host'] = settings.get('host', '127.0.0.1')
+    S['tool_port'] = int(settings.get('port', 4444))
+    S['tool_base_url'] = '/' if base_url == '/' else preview_url
     # Configure routes
     host_pattern = r'.*$'
     if notebook_app.password:
