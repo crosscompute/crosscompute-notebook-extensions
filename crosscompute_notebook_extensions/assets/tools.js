@@ -19,7 +19,7 @@ define([
 
 		var code_cell = notebook.container.find('.code_cell').first().data('cell');
 		if (code_cell === undefined || !/crosscompute/i.test(code_cell.get_text())) {
-      rewrite_modal($feedback_modal, 'Tool preview cancelled', '<p>This notebook does not appear to be a CrossCompute Tool.</p><p><a href="https://crosscompute.com/docs" target="_blank">Please make sure the first code cell contains the word CrossCompute</a>.</p>');
+      rewrite_modal($feedback_modal, 'Tool preview cancelled', '<p>This notebook does not appear to be a CrossCompute Tool.</p><p><a href="https://crosscompute.com/create#create-tools" target="_blank">Please make sure the first code cell contains the word CrossCompute</a>.</p>');
       return;
     }
 
