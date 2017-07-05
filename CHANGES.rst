@@ -1,6 +1,7 @@
 0.4
 ---
-- Debug when previewing tool directly from notebook
+- Preview only if first code cell has the word CrossCompute
+- Show errors if preview fails
 - Ignore IPython magic
 - Improve unicode support
 - Save tool template if first cell is markdown
@@ -20,4 +21,4 @@
 0.1
 ---
 - Add ToolPreview extension
-- Extracte notebook support from crosscompute package
+- Extract notebook support from crosscompute package
