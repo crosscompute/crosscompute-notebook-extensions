@@ -2,7 +2,7 @@ var notebook;
 
 define([
   'base/js/namespace',
-  'base/js/dialog',
+  'base/js/dialog'
 ], function(jupyter, dialog) {
 
 	var keyboard_manager = jupyter.keyboard_manager;
