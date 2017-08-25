@@ -71,8 +71,7 @@ def stop_servers():
 
 def load_jupyter_server_extension(notebook_app):
     base_url = notebook_app.base_url
-    namespace_url = url_path_join(base_url, '/extensions/crosscompute')
-    preview_url = url_path_join(namespace_url, 'preview')
+    preview_url = get_preview_url(base_url)
     # Configure settings
     settings = notebook_app.config.get('CrossCompute', {})
     S['tool_host'] = settings.get('host', '127.0.0.1')
@@ -88,6 +87,15 @@ def load_jupyter_server_extension(notebook_app):
     ])
     # Set exit hooks
     atexit.register(stop_servers)
+
+
+def get_namespace_url(base_url):
+    return url_path_join(base_url, '/extensions/crosscompute')
+
+
+def get_preview_url(base_url):
+    namespace_url = get_namespace_url(base_url)
+    return url_path_join(namespace_url, 'preview')
 
 
 def _jupyter_nbextension_paths():
