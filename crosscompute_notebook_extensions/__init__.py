@@ -32,7 +32,7 @@ class ToolPreviewJson(IPythonHandler):
         d = {}
         for x in range(10):
             try:
-                requests.get('http://localhost:%s' % tool_port)
+                requests.get('http://127.0.0.1:%s' % tool_port)
             except ConnectionError:
                 sleep(1)
             else:
