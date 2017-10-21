@@ -22,20 +22,13 @@ define([
       return x.replace(/X/g, noun);
     }
 
-    var $feedback_modal = dialog.modal({
-      notebook: notebook,
-      keyboard_manager: keyboard_manager,
-      title: render_text('Preparing tool X...'),
-      body: 'Please be patient.',
-      buttons: {'Close': {}}
-    });
-
 		var code_cell = notebook.container.find('.code_cell').first().data('cell');
 		if (code_cell === undefined || !/crosscompute/i.test(code_cell.get_text())) {
-      rewrite_modal($feedback_modal, render_text('Tool X cancelled'), '<p>This notebook does not appear to be a CrossCompute Tool.</p><p><a href="https://crosscompute.com/create#create-tools" target="_blank">Please make sure the first code cell contains the word CrossCompute</a>.</p>');
+      show_modal(render_text('Tool X cancelled'), '<p>This notebook does not appear to be a CrossCompute Tool.</p><p><a href="https://crosscompute.com/create#create-tools" target="_blank">Please make sure the first code cell contains the word CrossCompute</a>.</p>');
       return;
     }
 
+    var $feedback_modal = show_modal(render_text('Preparing tool X...'), 'Please be patient.');
     notebook.save_notebook();
     notebook.events.one('notebook_saved.Notebook', function() {
       $.ajax({
@@ -46,7 +39,7 @@ define([
           'notebook_path': notebook.notebook_path
         }
       }).fail(function(jqXHR) {
-        var title = render_text('Tool X failed'), body = 'Unable to reach server';
+        var title = render_text('Tool X failed'), body = 'Unable to reach server.';
         switch(jqXHR.status) {
           case 400:
             var d = jqXHR.responseJSON;
@@ -55,11 +48,9 @@ define([
             }
             break;
           case 401:
-            rewrite_modal($feedback_modal, 'Token required', '<textarea class="form-control"></textarea>');
+            rewrite_modal($feedback_modal, 'Server token required', '<textarea class="form-control"></textarea>');
             var $textarea = $feedback_modal.find('textarea');
-            $feedback_modal.one('shown.bs.modal', function() {
-              $textarea.focus();
-            }).one('hide.bs.modal', function() {
+            $feedback_modal.one('hidden.bs.modal', function() {
               var server_token = $.trim($textarea.val());
               if (!server_token.length) return;
               update_configuration('server_token', server_token);
@@ -83,10 +74,10 @@ define([
         'variable_value': variable_value,
       },
       success: function(d) {
-        rewrite_modal($feedback_modal, 'Configuration update succeeded', 'Please retry your request.');
+        show_modal('Configuration update succeeded', 'Please retry your request.');
       },
       error: function(jqXHR) {
-        rewrite_modal($feedback_modal, 'Configuration update failed', 'Could not update configuration at this time.');
+        show_modal('Configuration update failed', 'Could not update configuration at this time.');
       }
     });
   }
@@ -94,6 +85,16 @@ define([
   function get_cookie(name) {
     var r = document.cookie.match('\\b' + name + '=([^;]*)\\b');
     return r ? r[1] : undefined;
+  }
+
+  function show_modal(title, body) {
+    return dialog.modal({
+      notebook: notebook,
+      keyboard_manager: keyboard_manager,
+      title: title,
+      body: body,
+      buttons: {'Close': {}}
+    });
   }
 
   function rewrite_modal($modal, title, body) {
