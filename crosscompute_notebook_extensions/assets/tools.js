@@ -39,13 +39,10 @@ define([
           'notebook_path': notebook.notebook_path
         }
       }).fail(function(jqXHR) {
-        var title = render_text('Tool X failed'), body = 'Unable to reach server.';
         switch(jqXHR.status) {
           case 400:
             var d = jqXHR.responseJSON;
-            if (d.text) {
-              body = '<pre>' + d.text + '</pre>';
-            }
+            update_modal(render_text('Tool X failed'), d.text ? '<pre>' + d.text + '</pre>' : 'Unable to reach server.');
             break;
           case 401:
             update_modal('Server token required', '<textarea class="form-control"></textarea>');
@@ -55,12 +52,11 @@ define([
               if (!server_token.length) return;
               update_configuration('server_token', server_token);
             });
-            return;
+            break;
           case 403:
-            body = 'Anonymous sessions cannot X tools. <a href="https://crosscompute.com" target="_blank">Please sign in and start an authenticated session</a> to X this tool.'.replace('X', verb);
+            update_modal('Account sign-in required', 'Anonymous sessions cannot X tools. <a href="https://crosscompute.com" target="_blank">Please sign in and start a new session</a> to X this tool.'.replace('X', verb));
             break;
         }
-        update_modal(title, body);
       }).done(function(d) {
         update_modal(render_text('Tool X succeeded'), '<p><a href="X" target="_blank">Click here to access your tool</a>.</p>'.replace(/X/g, d.tool_url));
       });
