@@ -19,8 +19,9 @@ Usage via command-line
 ----------------------
 ::
 
-    crosscompute serve tests/notebooks/add-integers.ipynb
-    crosscompute serve tests/notebooks/map-locations.ipynb
+    git clone https://github.com/crosscompute/default-notebooks
+    cd default-notebooks/Examples/Python
+    crosscompute serve "Suggest Concepts.ipynb"
 
 Usage via Jupyter Notebook
 --------------------------
@@ -29,4 +30,5 @@ Usage via Jupyter Notebook
     cd tests/notebooks
     jupyter notebook
 
-Click the green paper plane icon (or press SHIFT-C SHIFT-P) to preview the notebook as a tool.
+- Click the blue paper plane icon (or press SHIFT-C SHIFT-P) to preview the notebook as a tool.
+- Click the red paper plane icon (or press SHIFT-C SHIFT-D) to deploy the notebook as a tool.

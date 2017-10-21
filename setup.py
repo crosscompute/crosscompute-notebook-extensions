@@ -4,17 +4,18 @@ from setuptools import find_packages, setup
 
 ENTRY_POINTS = """
 [crosscompute.extensions]
-ipynb = crosscompute_notebook_extensions.ipynb:IPythonNotebookTool
-"""
+ipynb = crosscompute_notebook_extensions.ipynb:IPythonNotebookTool"""
 FOLDER = dirname(abspath(__file__))
 DESCRIPTION = '\n\n'.join(open(join(FOLDER, x)).read().strip() for x in [
     'README.rst', 'CHANGES.rst'])
 setup(
     name='crosscompute-notebook-extensions',
-    version='0.4.3',
+    version='0.5.0',
     description='CrossCompute extensions for Jupyter Notebook',
     long_description=DESCRIPTION,
     classifiers=[
+        'Framework :: CrossCompute',
+        'Framework :: Jupyter',
         'Programming Language :: Python',
     ],
     author='CrossCompute Inc',
@@ -28,13 +29,13 @@ setup(
         'pytest-runner',
     ],
     install_requires=[
+        'configparser',
         'crosscompute>=0.6.9',
         'crosscompute-types>=0.6.9',
         'jinja2',
         'notebook>=5.0.0',
         'psutil',
         'requests',
-        'simplejson',
     ],
     tests_require=[
         'pytest',

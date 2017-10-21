@@ -1,3 +1,7 @@
+0.5
+---
+- Add ToolDeployJson extension
+
 0.4
 ---
 - Preview only if first code cell has the word CrossCompute
@@ -20,5 +24,5 @@
 
 0.1
 ---
-- Add ToolPreview extension
+- Add ToolPreviewJson extension
 - Extract notebook support from crosscompute package

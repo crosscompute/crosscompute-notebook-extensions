@@ -4,9 +4,12 @@ Adapted from prototypes by [Salah Ahmed](https://github.com/salah93)
 """
 import atexit
 import requests
-import simplejson as json
+from configparser import ConfigParser
+from invisibleroads_macros.disk import compress
 from notebook.base.handlers import IPythonHandler
 from notebook.utils import url_path_join
+from os import environ
+from os.path import expanduser
 from psutil import process_iter
 from requests.exceptions import ConnectionError
 from signal import SIGINT
@@ -14,12 +17,32 @@ from subprocess import Popen, PIPE
 from time import sleep
 from tornado import web
 
+from .ipynb import IPythonNotebookTool
 from .settings import S
+
+
+class ConfigurationUpdateJson(IPythonHandler):
+
+    def post(self):
+        variable_name = self.get_argument('variable_name')
+        if variable_name not in ['server_token']:
+            self.set_status(400)
+            return self.write({variable_name: 'unexpected'})
+        variable_value = self.get_argument('variable_value')
+        configuration = ConfigParser()
+        configuration_path = get_configuration_path()
+        configuration.read(configuration_path)
+        if 'crosscompute-website' not in configuration:
+            configuration.add_section('crosscompute-website')
+        configuration_section = configuration['crosscompute-website']
+        configuration_section[variable_name] = variable_value
+        configuration.write(open(configuration_path, 'wt'))
+        self.write({})
 
 
 class ToolPreviewJson(IPythonHandler):
 
-    def get(self):
+    def post(self):
         stop_servers()
         notebook_path = self.get_argument('notebook_path')
         tool_port = S['tool_port']
@@ -45,9 +68,8 @@ class ToolPreviewJson(IPythonHandler):
                 break
         else:
             status_code = 400
-        self.set_header('Content-Type', 'application/json')
         self.set_status(status_code)
-        self.write(json.dumps(d))
+        self.write(d)
 
     def _get_tool_url(self):
         tool_base_url = S['tool_base_url']
@@ -60,6 +82,76 @@ class ToolPreviewJson(IPythonHandler):
         return tool_url
 
 
+class ToolDeployJson(IPythonHandler):
+
+    def post(self):
+        try:
+            crosscompute_token = expect_variable('CROSSCOMPUTE_TOKEN')
+        except KeyError as e:
+            self.set_status(401)
+            return self.write({})
+        crosscompute_url = expect_variable(
+            'CROSSCOMPUTE_URL', 'https://crosscompute.com')
+        notebook_path = self.get_argument('notebook_path')
+        tool_definition = IPythonNotebookTool.prepare_tool_definition(
+            notebook_path)
+        archive_path = compress(tool_definition['configuration_folder'])
+        response = requests.post(crosscompute_url + '/tools.json', headers={
+            'Authorization': 'Bearer ' + crosscompute_token,
+        }, files={
+            'tool_folder': open(archive_path, 'rb'),
+        })
+        status_code = response.status_code
+        if status_code != 200:
+            self.set_status(status_code)
+            return self.write({})
+        try:
+            d = response.json()
+            tool_url = d['tool_url']
+        except Exception:
+            self.set_status(503)
+            return self.write({})
+        self.write({'tool_url': crosscompute_url + tool_url})
+
+
+def get_configuration_path():
+    return expanduser('~/.crosscompute/.settings.ini')
+
+
+def load_jupyter_server_extension(notebook_app):
+    base_url = notebook_app.base_url
+    configure_url = get_extension_url(base_url, 'configure')
+    preview_url = get_extension_url(base_url, 'preview')
+    deploy_url = get_extension_url(base_url, 'deploy')
+    # Configure settings
+    settings = notebook_app.config.get('CrossCompute', {})
+    S['tool_host'] = settings.get('host', '127.0.0.1')
+    S['tool_port'] = int(settings.get('port', 4444))
+    S['tool_base_url'] = '/' if base_url == '/' else preview_url
+    # Configure routes
+    host_pattern = r'.*$'
+    if notebook_app.password:
+        for x in ConfigurationUpdateJson, ToolPreviewJson, ToolDeployJson:
+            x.post = web.authenticated(x.post)
+    web_app = notebook_app.web_app
+    web_app.add_handlers(host_pattern, [
+        (configure_url + '.json', ConfigurationUpdateJson),
+        (preview_url + '.json', ToolPreviewJson),
+        (deploy_url + '.json', ToolDeployJson),
+    ])
+    # Set exit hooks
+    atexit.register(stop_servers)
+
+
+def get_extension_url(base_url, verb):
+    namespace_url = get_namespace_url(base_url)
+    return url_path_join(namespace_url, verb)
+
+
+def get_namespace_url(base_url):
+    return url_path_join(base_url, '/extensions/crosscompute')
+
+
 def stop_servers():
     for process in process_iter():
         if process.name() != 'crosscompute':
@@ -69,33 +161,26 @@ def stop_servers():
             process.send_signal(SIGINT)
 
 
-def load_jupyter_server_extension(notebook_app):
-    base_url = notebook_app.base_url
-    preview_url = get_preview_url(base_url)
-    # Configure settings
-    settings = notebook_app.config.get('CrossCompute', {})
-    S['tool_host'] = settings.get('host', '127.0.0.1')
-    S['tool_port'] = int(settings.get('port', 4444))
-    S['tool_base_url'] = '/' if base_url == '/' else preview_url
-    # Configure routes
-    host_pattern = r'.*$'
-    if notebook_app.password:
-        ToolPreviewJson.get = web.authenticated(ToolPreviewJson.get)
-    web_app = notebook_app.web_app
-    web_app.add_handlers(host_pattern, [
-        (preview_url + '.json', ToolPreviewJson),
-    ])
-    # Set exit hooks
-    atexit.register(stop_servers)
-
-
-def get_namespace_url(base_url):
-    return url_path_join(base_url, '/extensions/crosscompute')
-
-
-def get_preview_url(base_url):
-    namespace_url = get_namespace_url(base_url)
-    return url_path_join(namespace_url, 'preview')
+def expect_variable(variable_name, default_value=None):
+    try:
+        return environ[variable_name]
+    except KeyError:
+        pass
+    setting_key = variable_name.lower().replace('crosscompute', 'server')
+    try:
+        return S[setting_key]
+    except KeyError:
+        pass
+    configuration = ConfigParser()
+    configuration_path = get_configuration_path()
+    configuration.read(configuration_path)
+    try:
+        return configuration['crosscompute-website'][setting_key]
+    except KeyError:
+        pass
+    if not default_value:
+        raise KeyError
+    return default_value
 
 
 def _jupyter_nbextension_paths():
