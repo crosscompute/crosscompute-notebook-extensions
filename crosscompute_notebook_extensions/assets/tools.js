@@ -65,6 +65,9 @@ define([
               update_configuration('server_token', server_token);
             });
             return;
+          case 403:
+            body = 'Anonymous sessions cannot X tools. <a href="https://crosscompute.com" target="_blank">Please sign in and start an authenticated session</a> to X this tool.'.replace('X', verb);
+            break;
         }
         rewrite_modal($feedback_modal, title, body);
       }).done(function(d) {
