@@ -49,8 +49,8 @@ define([
             break;
           case 401:
             update_modal('Server token required', '<textarea class="form-control"></textarea>');
-            var $textarea = $feedback_modal.find('textarea');
-            $feedback_modal.one('hidden.bs.modal', function() {
+            var $textarea = $modal.find('textarea');
+            $modal.one('hidden.bs.modal', function() {
               var server_token = $.trim($textarea.val());
               if (!server_token.length) return;
               update_configuration('server_token', server_token);
@@ -100,6 +100,7 @@ define([
     if ($modal) {
       $modal.find('.modal-title').text(title);
       $modal.find('.modal-body').html(body);
+      $modal.modal('show');
     } else {
       $modal = dialog.modal({
         notebook: notebook,
