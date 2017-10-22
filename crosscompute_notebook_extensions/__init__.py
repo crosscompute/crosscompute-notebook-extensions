@@ -94,7 +94,7 @@ class ToolDeployJson(IPythonHandler):
             return self.write({})
         crosscompute_url = expect_variable(
             'CROSSCOMPUTE_URL', 'https://crosscompute.com')
-        notebook_id = expect_variable('NOTEBOOK_ID', None)
+        notebook_id = expect_variable('NOTEBOOK_ID', '')
 
         notebook_path = self.get_argument('notebook_path')
         tool_definition = IPythonNotebookTool.prepare_tool_definition(
@@ -185,7 +185,7 @@ def expect_variable(variable_name, default_value=None):
         return configuration['crosscompute-website'][setting_key]
     except KeyError:
         pass
-    if not default_value:
+    if default_value is None:
         raise KeyError
     return default_value
 
