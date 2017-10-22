@@ -63,7 +63,7 @@ define([
       }).done(function(d) {
         var body = '<p><a href="X" target="_blank">Click here to access your tool</a>.</p>'.replace(/X/g, d.tool_url);
         if (verb == 'preview') {
-          body += '<p>Note that your tool preview will stop working after the notebook session ends. Deploy the tool using the red button to make it available on <a href="https://crosscompute.com">CrossCompute</a>.</p>';
+          body += '<p>Note that your tool preview will stop working after the notebook session ends. Deploy the tool using the red button to make it available on <a href="https://crosscompute.com" target="_blank">CrossCompute</a>.</p>';
         }
         show_modal(render_text('Tool X succeeded'), body);
       });
