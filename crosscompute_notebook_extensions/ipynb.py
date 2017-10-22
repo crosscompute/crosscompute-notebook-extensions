@@ -62,7 +62,7 @@ def prepare_script_folder(
     command_name = notebook['metadata']['kernelspec']['name']
     configuration_content = prepare_configuration(
         tool_name, command_name, script_name, make_relative_paths(
-            tool_arguments, notebook_folder), **kw)
+            tool_arguments, script_folder), **kw)
     configuration_name = 'cc.ini'
     copy_text(join(script_folder, configuration_name), configuration_content)
 
