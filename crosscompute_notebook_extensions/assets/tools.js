@@ -16,7 +16,7 @@ define([
 
   function deploy_tool() {
     if (notebook.notebook_name == 'Untitled.ipynb') {
-      return show_modal('Tool name required', 'Please rename your notebook to anything other than Untitled. The name of the notebook will become the name of the tool.');
+      return show_modal('Tool name required', 'Your notebook is Untitled. Please give a name to your notebook. The name of the notebook will become the name of the tool.');
     }
     process_notebook('deploy', 'deployment');
   }
@@ -63,7 +63,7 @@ define([
       }).done(function(d) {
         var body = '<p><a href="X" target="_blank">Click here to access your tool</a>.</p>'.replace(/X/g, d.tool_url);
         if (verb == 'preview') {
-          body += '<p>Note that your tool preview will stop working after the notebook session ends. Deploy the tool using the red button to make it available on the <a href="https://crosscompute.com">CrossCompute</a> website.</p>';
+          body += '<p>Note that your tool preview will stop working after the notebook session ends. Deploy the tool using the red button to make it available on <a href="https://crosscompute.com">CrossCompute</a>.</p>';
         }
         show_modal(render_text('Tool X succeeded'), body);
       });

@@ -6,7 +6,8 @@ from crosscompute.exceptions import CrossComputeError
 from crosscompute.extensions import ToolExtension
 from crosscompute.scripts import corral_arguments
 from crosscompute.types import RESERVED_ARGUMENT_NAMES
-from invisibleroads_macros.configuration import make_absolute_paths
+from invisibleroads_macros.configuration import (
+    make_absolute_paths, make_relative_paths)
 from invisibleroads_macros.disk import (
     copy_text, make_enumerated_folder, HOME_FOLDER)
 from invisibleroads_macros.text import unicode_safely
@@ -60,7 +61,8 @@ def prepare_script_folder(
     # Save configuration
     command_name = notebook['metadata']['kernelspec']['name']
     configuration_content = prepare_configuration(
-        tool_name, command_name, script_name, tool_arguments, **kw)
+        tool_name, command_name, script_name, make_relative_paths(
+            tool_arguments, notebook_folder), **kw)
     configuration_name = 'cc.ini'
     copy_text(join(script_folder, configuration_name), configuration_content)
 
