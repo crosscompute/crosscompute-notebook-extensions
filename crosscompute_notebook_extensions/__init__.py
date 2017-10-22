@@ -51,7 +51,9 @@ class ToolPreviewJson(IPythonHandler):
             '--host', S['tool_host'],
             '--port', str(tool_port),
             '--base_url', S['tool_base_url'],
-            '--debug', '--without_browser', '--quietly'), stderr=PIPE)
+            '--with_debugging',
+            '--without_browser',
+            '--without_logging'), stderr=PIPE)
         d = {}
         for x in range(10):
             try:

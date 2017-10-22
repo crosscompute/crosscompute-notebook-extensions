@@ -64,6 +64,8 @@ define([
         var body = '<p><a href="X" target="_blank">Click here to access your tool</a>.</p>'.replace(/X/g, d.tool_url);
         if (verb == 'preview') {
           body += '<p>Note that your tool preview will stop working after the notebook session ends. Deploy the tool using the red button to make it available on <a href="https://crosscompute.com" target="_blank">CrossCompute</a>.</p>';
+        } elif (verb == 'deploy') {
+          body += '<p>Its visibility is <b>hidden</b>, which means that only users with the exact url will be able to access the tool. You can choose to make the tool public by clicking the eye icon at the top of the deployed tool. If you make it public, the tool will appear on your profile.</p>';
         }
         show_modal(render_text('Tool X succeeded'), body);
       });

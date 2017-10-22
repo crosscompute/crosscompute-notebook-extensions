@@ -26,22 +26,22 @@ JINJA2_ENVIRONMENT = Environment(loader=PackageLoader(
 class IPythonNotebookTool(ToolExtension):
 
     @classmethod
-    def prepare_tool_definition(self, path, debug=False):
+    def prepare_tool_definition(self, path, with_debugging=False):
         tool_name = get_tool_name(path)
         script_folder = make_enumerated_folder(join(
             HOME_FOLDER, '.crosscompute', tool_name, 'tools'))
-        prepare_script_folder(script_folder, path, tool_name, debug)
+        prepare_script_folder(script_folder, path, tool_name, with_debugging)
         return find_tool_definition(script_folder, default_tool_name=tool_name)
 
 
 def prepare_script_folder(
-        script_folder, notebook_path, tool_name, debug=False):
+        script_folder, notebook_path, tool_name, with_debugging=False):
     notebook = load_notebook(notebook_path)
     notebook_folder = dirname(abspath(notebook_path))
     tool_arguments = load_tool_arguments(notebook)
     tool_arguments = make_absolute_paths(tool_arguments, notebook_folder)
     tool_arguments = corral_arguments(script_folder, tool_arguments)
-    kw = {'debug': debug}
+    kw = {'with_debugging': with_debugging}
     # Save script
     script_content = prepare_script(tool_arguments, notebook)
     script_name = 'run.py'
@@ -112,7 +112,8 @@ def get_code_cells(notebook):
 
 def prepare_configuration(
         tool_name, command_name, script_name, tool_arguments,
-        tool_template_path=None, result_template_path=None, debug=False):
+        tool_template_path=None, result_template_path=None,
+        with_debugging=False):
     configuration_lines = []
     configuration_lines.append('[crosscompute %s]' % tool_name)
     configuration_lines.append('command_template = %s %s %s' % (
@@ -121,14 +122,14 @@ def prepare_configuration(
     for k, v in tool_arguments.items():
         if k in RESERVED_ARGUMENT_NAMES:
             continue
-        configuration_lines.append('%s = %s' % (k, v))
+        configuration_lines.append('x.%s = %s' % (k, v))
     if tool_template_path:
         configuration_lines.append(
             'tool_template_path = %s' % tool_template_path)
     if result_template_path:
         configuration_lines.append(
             'result_template_path = %s' % result_template_path)
-    if debug:
+    if with_debugging:
         configuration_lines.extend([
             'show_standard_error = True',
             'show_standard_output = True',
