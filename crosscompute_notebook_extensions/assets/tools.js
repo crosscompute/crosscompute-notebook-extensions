@@ -15,6 +15,9 @@ define([
   }
 
   function deploy_tool() {
+    if (notebook.notebook_name == 'Untitled.ipynb') {
+      return show_modal('Tool name required', 'Please rename your notebook to anything other than Untitled. The name of the notebook will become the name of the tool.');
+    }
     process_notebook('deploy', 'deployment');
   }
 
@@ -25,11 +28,11 @@ define([
 
 		var code_cell = notebook.container.find('.code_cell').first().data('cell');
 		if (code_cell === undefined || !/crosscompute/i.test(code_cell.get_text())) {
-      update_modal(render_text('Tool X cancelled'), '<p>This notebook does not appear to be a CrossCompute Tool.</p><p><a href="https://crosscompute.com/create#create-tools" target="_blank">Please make sure the first code cell contains the word CrossCompute</a>.</p>');
+      show_modal(render_text('Tool X cancelled'), '<p>This notebook does not appear to be a CrossCompute Tool.</p><p><a href="https://crosscompute.com/create#create-tools" target="_blank">Please make sure the first code cell contains the word CrossCompute</a>.</p>');
       return;
     }
 
-    update_modal(render_text('Preparing tool X...'), 'Please be patient.');
+    show_modal(render_text('Preparing tool X...'), 'Please be patient.');
     notebook.events.one('notebook_saved.Notebook', function() {
       $.ajax({
         method: 'post',
@@ -42,10 +45,10 @@ define([
         switch(jqXHR.status) {
           case 400:
             var d = jqXHR.responseJSON;
-            update_modal(render_text('Tool X failed'), d.text ? '<pre>' + d.text + '</pre>' : 'Unable to reach server.');
+            show_modal(render_text('Tool X failed'), d.text ? '<pre>' + d.text + '</pre>' : 'Unable to reach server.');
             break;
           case 401:
-            update_modal('Server token required', '<textarea class="form-control"></textarea>');
+            show_modal('Server token required', '<textarea class="form-control"></textarea>');
             var $textarea = $modal.find('textarea');
             $modal.one('hidden.bs.modal', function() {
               var server_token = $.trim($textarea.val());
@@ -54,11 +57,15 @@ define([
             });
             break;
           case 403:
-            update_modal('Account sign-in required', 'Anonymous sessions cannot X tools. <a href="https://crosscompute.com" target="_blank">Please sign in and start a new session</a> to X this tool.'.replace('X', verb));
+            show_modal('Account sign-in required', 'Anonymous sessions cannot X tools. <a href="https://crosscompute.com" target="_blank">Please sign in and start a new session</a> to X this tool.'.replace('X', verb));
             break;
         }
       }).done(function(d) {
-        update_modal(render_text('Tool X succeeded'), '<p><a href="X" target="_blank">Click here to access your tool</a>.</p>'.replace(/X/g, d.tool_url));
+        var body = '<p><a href="X" target="_blank">Click here to access your tool</a>.</p>'.replace(/X/g, d.tool_url);
+        if (verb == 'preview') {
+          body += '<p>Note that your tool preview will stop working after the notebook session ends. Deploy the tool using the red button to make it available on the <a href="https://crosscompute.com">CrossCompute</a> website.</p>';
+        }
+        show_modal(render_text('Tool X succeeded'), body);
       });
     });
     notebook.save_notebook();
@@ -79,10 +86,10 @@ define([
         'variable_value': variable_value,
       },
       success: function(d) {
-        update_modal('Configuration update succeeded', 'Please retry your request.');
+        show_modal('Configuration update succeeded', 'Please retry your request.');
       },
       error: function(jqXHR) {
-        update_modal('Configuration update failed', 'Could not update configuration at this time.');
+        show_modal('Configuration update failed', 'Could not update configuration at this time.');
       }
     });
   }
@@ -92,7 +99,7 @@ define([
     return r ? r[1] : undefined;
   }
 
-  function update_modal(title, body) {
+  function show_modal(title, body) {
     if ($modal) {
       $modal.find('.modal-title').text(title);
       $modal.find('.modal-body').html(body);
