@@ -36,7 +36,7 @@ define([
     notebook.events.one('notebook_saved.Notebook', function() {
       $.ajax({
         method: 'post',
-        url: notebook.base_url + 'extensions/crosscompute/X.json'.replace('X', verb),
+        url: notebook.base_url + 'extensions/crosscompute/X.json'.replace(/X/g, verb),
         data: {
           '_xsrf': get_cookie('_xsrf'),
           'notebook_path': notebook.notebook_path
@@ -57,7 +57,7 @@ define([
             });
             break;
           case 403:
-            show_modal('Account sign-in required', 'Anonymous sessions cannot X tools. <a href="https://crosscompute.com" target="_blank">Please sign in and start a new session</a> to X this tool.'.replace('X', verb));
+            show_modal('Account sign-in required', 'Anonymous sessions cannot X tools. <a href="https://crosscompute.com" target="_blank">Please sign in and start a new session</a> to X this tool.'.replace(/X/g, verb));
             break;
         }
       }).done(function(d) {
