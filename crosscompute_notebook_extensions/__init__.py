@@ -46,14 +46,17 @@ class ToolPreviewJson(IPythonHandler):
         stop_servers()
         notebook_path = self.get_argument('notebook_path')
         tool_port = S['tool_port']
-        process = Popen((
+        process_arguments = [
             'crosscompute', 'serve', notebook_path,
             '--host', S['tool_host'],
             '--port', str(tool_port),
             '--base_url', S['tool_base_url'],
-            '--with_debugging',
-            '--without_browser',
-            '--without_logging'), stderr=PIPE)
+            '--without_browser', '--without_logging', '--with_debugging']
+        for x in 'brand_url', 'website_name', 'website_owner':
+            y = expect_variable('CROSSCOMPUTE_' + x.upper(), '')
+            if y:
+                process_arguments.extend(('--' + x, y))
+        process = Popen(process_arguments, stderr=PIPE)
         d = {}
         for x in range(10):
             try:
@@ -94,7 +97,7 @@ class ToolDeployJson(IPythonHandler):
             return self.write({})
         crosscompute_url = expect_variable(
             'CROSSCOMPUTE_URL', 'https://crosscompute.com')
-        notebook_id = expect_variable('NOTEBOOK_ID', '')
+        notebook_id = expect_variable('CROSSCOMPUTE_NOTEBOOK_ID', '')
 
         notebook_path = self.get_argument('notebook_path')
         tool_definition = IPythonNotebookTool.prepare_tool_definition(
