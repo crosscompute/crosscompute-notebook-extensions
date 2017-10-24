@@ -8,7 +8,6 @@ from configparser import ConfigParser
 from invisibleroads_macros.disk import compress
 from notebook.base.handlers import IPythonHandler
 from notebook.utils import url_path_join
-from os import environ
 from os.path import expanduser
 from psutil import process_iter
 from requests.exceptions import ConnectionError
@@ -37,6 +36,7 @@ class ConfigurationUpdateJson(IPythonHandler):
         configuration_section = configuration['crosscompute-website']
         configuration_section[variable_name] = variable_value
         configuration.write(open(configuration_path, 'wt'))
+        S[variable_name] = variable_value
         self.write({})
 
 
@@ -53,7 +53,7 @@ class ToolPreviewJson(IPythonHandler):
             '--base_url', S['tool_base_url'],
             '--without_browser', '--without_logging', '--with_debugging']
         for x in 'brand_url', 'website_name', 'website_owner':
-            y = expect_variable('CROSSCOMPUTE_' + x.upper(), '')
+            y = expect_variable(x, '')
             if y:
                 process_arguments.extend(('--' + x, y))
         process = Popen(process_arguments, stderr=PIPE)
@@ -91,21 +91,20 @@ class ToolDeployJson(IPythonHandler):
 
     def post(self):
         try:
-            crosscompute_token = expect_variable('CROSSCOMPUTE_TOKEN')
+            server_token = expect_variable('server_token')
         except KeyError as e:
             self.set_status(401)
             return self.write({})
-        crosscompute_url = expect_variable(
-            'CROSSCOMPUTE_URL', 'https://crosscompute.com')
-        notebook_id = expect_variable('CROSSCOMPUTE_NOTEBOOK_ID', '')
+        server_url = expect_variable('server_url', 'https://crosscompute.com')
+        notebook_id = expect_variable('notebook_id', '')
 
         notebook_path = self.get_argument('notebook_path')
         tool_definition = IPythonNotebookTool.prepare_tool_definition(
             notebook_path)
         archive_path = compress(tool_definition['configuration_folder'])
 
-        response = requests.post(crosscompute_url + '/tools.json', headers={
-            'Authorization': 'Bearer ' + crosscompute_token,
+        response = requests.post(server_url + '/tools.json', headers={
+            'Authorization': 'Bearer ' + server_token,
         }, data={
             'notebook_id': notebook_id,
         } if notebook_id else {}, files={
@@ -121,7 +120,7 @@ class ToolDeployJson(IPythonHandler):
         except Exception:
             self.set_status(503)
             return self.write({})
-        self.write({'tool_url': crosscompute_url + tool_url})
+        self.write({'tool_url': server_url + tool_url})
 
 
 def get_configuration_path():
@@ -173,21 +172,19 @@ def stop_servers():
 
 def expect_variable(variable_name, default_value=None):
     try:
-        return environ[variable_name]
-    except KeyError:
-        pass
-    setting_key = variable_name.lower().replace('crosscompute', 'server')
-    try:
-        return S[setting_key]
+        return S[variable_name]
     except KeyError:
         pass
     configuration = ConfigParser()
     configuration_path = get_configuration_path()
     configuration.read(configuration_path)
     try:
-        return configuration['crosscompute-website'][setting_key]
+        value = configuration['crosscompute-website'][variable_name]
     except KeyError:
         pass
+    else:
+        S[variable_name] = value
+        return value
     if default_value is None:
         raise KeyError
     return default_value
