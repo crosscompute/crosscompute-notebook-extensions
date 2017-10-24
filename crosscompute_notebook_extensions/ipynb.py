@@ -9,7 +9,7 @@ from crosscompute.types import RESERVED_ARGUMENT_NAMES
 from invisibleroads_macros.configuration import (
     make_absolute_paths, make_relative_paths)
 from invisibleroads_macros.disk import (
-    copy_text, make_enumerated_folder, HOME_FOLDER)
+    copy_folder, copy_text, make_enumerated_folder, HOME_FOLDER)
 from invisibleroads_macros.text import unicode_safely
 from jinja2 import Environment, PackageLoader
 from nbconvert.exporters import PythonExporter
@@ -42,6 +42,8 @@ def prepare_script_folder(
     tool_arguments = make_absolute_paths(tool_arguments, notebook_folder)
     tool_arguments = corral_arguments(script_folder, tool_arguments)
     kw = {'with_debugging': with_debugging}
+    # Save notebook contents
+    copy_folder(script_folder, notebook_folder)
     # Save script
     script_content = prepare_script(tool_arguments, notebook)
     script_name = 'run.py'
@@ -130,9 +132,6 @@ def prepare_configuration(
         configuration_lines.append(
             'result_template_path = %s' % result_template_path)
     if with_debugging:
-        configuration_lines.extend([
-            'show_standard_error = True',
-            'show_standard_output = True',
-        ])
+        configuration_lines.append('show_raw_output = True')
     configuration_content = '\n'.join(configuration_lines)
     return configuration_content

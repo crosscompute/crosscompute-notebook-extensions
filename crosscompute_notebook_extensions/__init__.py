@@ -100,7 +100,7 @@ class ToolDeployJson(IPythonHandler):
 
         notebook_path = self.get_argument('notebook_path')
         tool_definition = IPythonNotebookTool.prepare_tool_definition(
-            notebook_path)
+            notebook_path, with_debugging=False)
         archive_path = compress(tool_definition['configuration_folder'])
 
         response = requests.post(server_url + '/tools.json', headers={
