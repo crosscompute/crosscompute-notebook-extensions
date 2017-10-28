@@ -1,6 +1,7 @@
 0.5
 ---
 - Add ToolDeployJson extension
+- Add ConfigurationUpdateJson extension
 
 0.4
 ---
