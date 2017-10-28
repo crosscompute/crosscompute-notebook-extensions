@@ -14,8 +14,8 @@ setup(
     description='CrossCompute extensions for Jupyter Notebook',
     long_description=DESCRIPTION,
     classifiers=[
-        'Framework :: CrossCompute',
         'Framework :: Jupyter',
+        'Framework :: Pyramid',
         'Programming Language :: Python',
     ],
     author='CrossCompute Inc',
