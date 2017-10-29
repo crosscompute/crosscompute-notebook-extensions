@@ -10,7 +10,7 @@ DESCRIPTION = '\n\n'.join(open(join(FOLDER, x)).read().strip() for x in [
     'README.rst', 'CHANGES.rst'])
 setup(
     name='crosscompute-notebook-extensions',
-    version='0.5.0',
+    version='0.5.0.1',
     description='CrossCompute extensions for Jupyter Notebook',
     long_description=DESCRIPTION,
     classifiers=[
