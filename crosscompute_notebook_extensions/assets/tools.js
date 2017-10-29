@@ -102,19 +102,16 @@ define([
   }
 
   function show_modal(title, body) {
-    if ($modal) {
-      $modal.find('.modal-title').text(title);
-      $modal.find('.modal-body').html(body);
-      $modal.modal('show');
-    } else {
+    if (!$modal) {
       $modal = dialog.modal({
         notebook: notebook,
         keyboard_manager: keyboard_manager,
-        title: title,
-        body: body,
         buttons: {'Close': {}}
       });
     }
+    $modal.find('.modal-title').text(title);
+    $modal.find('.modal-body').html(body);
+    $modal.modal('show');
   }
 
   function set_toolbar_button_css(action_name, d) {
