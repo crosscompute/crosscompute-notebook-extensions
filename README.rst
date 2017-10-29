@@ -7,6 +7,7 @@ Installation
 ------------
 ::
 
+    sudo dnf -y install procps
     pip install crosscompute-notebook-extensions
     jupyter nbextension install \
         --py --sys-prefix crosscompute_notebook_extensions
