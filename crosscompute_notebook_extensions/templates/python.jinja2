@@ -1,5 +1,7 @@
-from mock import MagicMock
+import matplotlib
+matplotlib.use('Agg')
 
 
 def get_ipython():
-    return MagicMock()
+    import mock
+    return mock.MagicMock()
