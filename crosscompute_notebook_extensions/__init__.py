@@ -6,6 +6,7 @@ import atexit
 import requests
 from configparser import ConfigParser
 from invisibleroads_macros.disk import compress
+from invisibleroads_macros.text import unicode_safely
 from notebook.base.handlers import IPythonHandler
 from notebook.utils import url_path_join
 from os.path import expanduser
@@ -69,7 +70,7 @@ class ToolPreviewJson(IPythonHandler):
                 break
             if process.poll():
                 status_code = 400
-                d['text'] = process.stderr.read()
+                d['text'] = unicode_safely(process.stderr.read().strip())
                 break
         else:
             status_code = 400
