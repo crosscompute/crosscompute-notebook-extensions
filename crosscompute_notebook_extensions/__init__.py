@@ -98,7 +98,6 @@ class ToolDeployJson(IPythonHandler):
             return self.write({})
         server_url = expect_variable('server_url', 'https://crosscompute.com')
         notebook_id = expect_variable('notebook_id', '')
-
         notebook_path = self.get_argument('notebook_path')
         tool_definition = IPythonNotebookTool.prepare_tool_definition(
             notebook_path, with_debugging=False)
@@ -108,6 +107,9 @@ class ToolDeployJson(IPythonHandler):
             'Authorization': 'Bearer ' + server_token,
         }, data={
             'notebook_id': notebook_id,
+            'environment_level': expect_variable('environment_level', 0),
+            'processor_level': expect_variable('environment_level', 0),
+            'memory_level': expect_variable('environment_level', 0),
         } if notebook_id else {}, files={
             'tool_folder': open(archive_path, 'rb'),
         })
