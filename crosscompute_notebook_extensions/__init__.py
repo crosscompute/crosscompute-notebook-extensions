@@ -10,11 +10,12 @@ from invisibleroads_macros.disk import compress
 from invisibleroads_macros.text import unicode_safely
 from notebook.base.handlers import IPythonHandler
 from notebook.utils import url_path_join
-from os.path import expanduser
+from os.path import expanduser, join
 from psutil import process_iter
 from requests.exceptions import ConnectionError
 from signal import SIGINT
 from subprocess import Popen, PIPE
+from tempfile import mkdtemp
 from time import sleep
 from tornado import web
 
@@ -58,6 +59,8 @@ class ToolPreviewJson(IPythonHandler):
             y = expect_variable(x, '')
             if y:
                 process_arguments.extend(('--' + x, y))
+        open(join(mkdtemp(), 'preview.sh'), 'wt').write(' '.join(
+            process_arguments))
         process = Popen(process_arguments, stderr=PIPE)
         d = {}
         for x in range(10):
