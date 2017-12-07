@@ -2,6 +2,7 @@
 ---
 - Add ToolDeployJson extension
 - Add ConfigurationUpdateJson extension
+- Show errors if deploy fails
 
 0.4
 ---

@@ -20,5 +20,5 @@ def load_notebook(path):
         except Exception:
             pass
     else:
-        raise CrossComputeError('Could not load notebook (path=%s)' % path)
+        raise CrossComputeError('could not load notebook (path=%s)' % path)
     return notebook

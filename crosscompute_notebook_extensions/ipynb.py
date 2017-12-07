@@ -40,7 +40,10 @@ def prepare_script_folder(
     notebook_folder = dirname(abspath(notebook_path))
     tool_arguments = load_tool_arguments(notebook)
     tool_arguments = make_absolute_paths(tool_arguments, notebook_folder)
-    tool_arguments = corral_arguments(script_folder, tool_arguments)
+    try:
+        tool_arguments = corral_arguments(script_folder, tool_arguments)
+    except IOError as e:
+        raise CrossComputeError({e.args[0]: 'path not found (%s)' % e.args[1]})
     kw = {'with_debugging': with_debugging}
     # Save notebook contents
     copy_folder(script_folder, notebook_folder)

@@ -5,6 +5,7 @@ Adapted from prototypes by [Salah Ahmed](https://github.com/salah93)
 import atexit
 import requests
 from configparser import ConfigParser
+from crosscompute.exceptions import CrossComputeError
 from invisibleroads_macros.disk import compress
 from invisibleroads_macros.text import unicode_safely
 from notebook.base.handlers import IPythonHandler
@@ -99,8 +100,12 @@ class ToolDeployJson(IPythonHandler):
         server_url = expect_variable('server_url', 'https://crosscompute.com')
         notebook_id = expect_variable('notebook_id', '')
         notebook_path = self.get_argument('notebook_path')
-        tool_definition = IPythonNotebookTool.prepare_tool_definition(
-            notebook_path, with_debugging=False)
+        try:
+            tool_definition = IPythonNotebookTool.prepare_tool_definition(
+                notebook_path, with_debugging=False)
+        except CrossComputeError as e:
+            self.set_status(400)
+            return self.write({'text': str(e)})
         archive_path = compress(tool_definition['configuration_folder'])
 
         response = requests.post(server_url + '/tools.json', headers={
