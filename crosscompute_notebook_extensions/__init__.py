@@ -15,7 +15,7 @@ from psutil import process_iter
 from requests.exceptions import ConnectionError
 from signal import SIGINT
 from subprocess import Popen, PIPE
-from tempfile import mkdtemp
+from tempfile import gettempdir
 from time import sleep
 from tornado import web
 
@@ -59,7 +59,7 @@ class ToolPreviewJson(IPythonHandler):
             y = expect_variable(x, '')
             if y:
                 process_arguments.extend(('--' + x, y))
-        open(join(mkdtemp(), 'preview.sh'), 'wt').write(' '.join(
+        open(join(gettempdir(), 'preview.sh'), 'wt').write(' '.join(
             process_arguments))
         process = Popen(process_arguments, stderr=PIPE)
         d = {}
