@@ -83,6 +83,8 @@ def load_tool_arguments(notebook):
         raise CrossComputeError(e)
     d = OrderedDict()
     for k, v in l.items():
+        if k.startswith('__'):
+            continue
         d[unicode_safely(k)] = unicode_safely(v)
     return d
 
