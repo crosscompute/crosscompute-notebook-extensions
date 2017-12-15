@@ -115,6 +115,7 @@ class ToolDeployJson(IPythonHandler):
             'Authorization': 'Bearer ' + server_token,
         }, data={
             'notebook_id': notebook_id,
+            'notebook_path': notebook_path,
             'environment_level': expect_variable('environment_level', 0),
             'processor_level': expect_variable('environment_level', 0),
             'memory_level': expect_variable('environment_level', 0),
