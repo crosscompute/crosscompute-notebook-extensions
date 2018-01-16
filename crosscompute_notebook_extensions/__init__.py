@@ -117,8 +117,8 @@ class ToolDeployJson(IPythonHandler):
             'notebook_id': notebook_id,
             'notebook_path': notebook_path,
             'environment_level': expect_variable('environment_level', 0),
-            'processor_level': expect_variable('environment_level', 0),
-            'memory_level': expect_variable('environment_level', 0),
+            'processor_level': expect_variable('processor_level', 0),
+            'memory_level': expect_variable('memory_level', 0),
         } if notebook_id else {}, files={
             'tool_folder': open(archive_path, 'rb'),
         })
