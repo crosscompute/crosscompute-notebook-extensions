@@ -14,7 +14,7 @@ from os.path import expanduser, join
 from psutil import process_iter
 from requests.exceptions import ConnectionError
 from signal import SIGINT
-from subprocess import Popen, PIPE
+from subprocess import Popen, check_call, PIPE
 from tempfile import gettempdir
 from time import sleep
 from tornado import web
@@ -110,6 +110,10 @@ class ToolDeployJson(IPythonHandler):
             self.set_status(400)
             return self.write({'text': str(e)})
         archive_path = compress(tool_definition['configuration_folder'])
+
+        notebook_push_path = expect_variable('notebook_push_path', '')
+        if notebook_push_path:
+            check_call([notebook_push_path])
 
         response = requests.post(server_url + '/tools.json', headers={
             'Authorization': 'Bearer ' + server_token,
