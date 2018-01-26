@@ -14,7 +14,7 @@ from os.path import expanduser, join
 from psutil import process_iter
 from requests.exceptions import ConnectionError
 from signal import SIGINT
-from subprocess import Popen, PIPE
+from subprocess import Popen, check_call, PIPE
 from tempfile import gettempdir
 from time import sleep
 from tornado import web
@@ -111,14 +111,18 @@ class ToolDeployJson(IPythonHandler):
             return self.write({'text': str(e)})
         archive_path = compress(tool_definition['configuration_folder'])
 
+        notebook_push_path = expect_variable('notebook_push_path', '')
+        if notebook_push_path:
+            check_call([notebook_push_path])
+
         response = requests.post(server_url + '/tools.json', headers={
             'Authorization': 'Bearer ' + server_token,
         }, data={
             'notebook_id': notebook_id,
             'notebook_path': notebook_path,
             'environment_level': expect_variable('environment_level', 0),
-            'processor_level': expect_variable('environment_level', 0),
-            'memory_level': expect_variable('environment_level', 0),
+            'processor_level': expect_variable('processor_level', 0),
+            'memory_level': expect_variable('memory_level', 0),
         } if notebook_id else {}, files={
             'tool_folder': open(archive_path, 'rb'),
         })
