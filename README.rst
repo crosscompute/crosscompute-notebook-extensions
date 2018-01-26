@@ -20,8 +20,8 @@ Usage via command-line
 ----------------------
 ::
 
-    git clone https://github.com/crosscompute/default-notebooks
-    cd default-notebooks/Examples/Python
+    git clone https://github.com/crosscompute/crosscompute-notebook-examples
+    cd crosscompute-notebook-examples/Examples
     crosscompute serve "Suggest Concepts.ipynb"
 
 Usage via Jupyter Notebook
