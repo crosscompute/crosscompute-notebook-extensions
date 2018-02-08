@@ -60,7 +60,7 @@ class ToolPreviewJson(IPythonHandler):
             if y:
                 process_arguments.extend(('--' + x, y))
         open(join(gettempdir(), 'preview.sh'), 'wt').write(' '.join(
-            process_arguments))
+            '"%s"' % x for x in process_arguments))
         process = Popen(process_arguments, stderr=PIPE)
         d = {}
         for x in range(10):

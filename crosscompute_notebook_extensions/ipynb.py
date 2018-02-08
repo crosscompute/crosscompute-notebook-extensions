@@ -4,7 +4,6 @@ from copy import deepcopy
 from crosscompute.configurations import find_tool_definition
 from crosscompute.exceptions import CrossComputeError
 from crosscompute.extensions import ToolExtension
-from crosscompute.scripts import corral_arguments
 from crosscompute.types import RESERVED_ARGUMENT_NAMES
 from invisibleroads_macros.configuration import (
     make_absolute_paths, make_relative_paths)
@@ -13,7 +12,7 @@ from invisibleroads_macros.disk import (
 from invisibleroads_macros.text import unicode_safely
 from jinja2 import Environment, PackageLoader
 from nbconvert.exporters import PythonExporter
-from os.path import abspath, dirname, join
+from os.path import abspath, dirname, exists, join, relpath
 from six import string_types
 
 from .macros import get_tool_name, load_notebook
@@ -38,15 +37,17 @@ def prepare_script_folder(
         script_folder, notebook_path, tool_name, with_debugging=False):
     notebook = load_notebook(notebook_path)
     notebook_folder = dirname(abspath(notebook_path))
-    tool_arguments = load_tool_arguments(notebook)
-    tool_arguments = make_absolute_paths(tool_arguments, notebook_folder)
-    try:
-        tool_arguments = corral_arguments(script_folder, tool_arguments)
-    except IOError as e:
-        raise CrossComputeError({e.args[0]: 'path not found (%s)' % e.args[1]})
-    kw = {'with_debugging': with_debugging}
-    # Save notebook contents
     copy_folder(script_folder, notebook_folder)
+    # Prepare arguments
+    tool_arguments = load_tool_arguments(notebook)
+    for k in RESERVED_ARGUMENT_NAMES:
+        tool_arguments.pop(k, None)
+    tool_arguments = make_absolute_paths(tool_arguments, script_folder)
+    for k, v in tool_arguments.items():
+        if k.endswith('_path') and not exists(v):
+            raise CrossComputeError({
+                k: 'file not found (%s)' % relpath(v, script_folder)})
+    kw = {'with_debugging': with_debugging}
     # Save script
     script_content = prepare_script(tool_arguments, notebook)
     script_name = 'run.py'
@@ -73,16 +74,16 @@ def prepare_script_folder(
 
 
 def load_tool_arguments(notebook):
-    g, l = OrderedDict(), OrderedDict()
+    gv, lv = OrderedDict(), OrderedDict()
     code_cells = get_code_cells(notebook)
     if not code_cells:
         raise CrossComputeError('cannot make a tool without code')
     try:
-        exec(code_cells[0]['source'], g, l)
+        exec(code_cells[0]['source'], gv, lv)
     except Exception as e:
         raise CrossComputeError(e)
     d = OrderedDict()
-    for k, v in l.items():
+    for k, v in lv.items():
         if k.startswith('__'):
             continue
         d[unicode_safely(k)] = unicode_safely(v)
