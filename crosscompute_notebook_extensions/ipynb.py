@@ -41,7 +41,7 @@ def prepare_script_folder(
     # Prepare arguments
     tool_arguments = load_tool_arguments(notebook)
     for k in RESERVED_ARGUMENT_NAMES:
-        tool_arguments.pop(k, None)
+        tool_arguments[k] = ''
     tool_arguments = make_absolute_paths(tool_arguments, script_folder)
     for k, v in tool_arguments.items():
         if k.endswith('_path') and not exists(v):
