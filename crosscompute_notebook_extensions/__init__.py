@@ -23,6 +23,20 @@ from .ipynb import IPythonNotebookTool
 from .settings import S
 
 
+class NotebookBackupJson(IPythonHandler):
+
+    def post(self):
+        notebook_push_path = expect_variable('notebook_push_path', '')
+        if not notebook_push_path:
+            self.set_status(501)
+            return self.write({})
+        if check_call([notebook_push_path]):
+            self.set_status(503)
+            return self.write({})
+        notebook_url = expect_variable('notebook_url', '')
+        self.write({'notebook_url': notebook_url})
+
+
 class ConfigurationUpdateJson(IPythonHandler):
 
     def post(self):
@@ -111,10 +125,6 @@ class ToolDeployJson(IPythonHandler):
             return self.write({'text': str(e)})
         archive_path = compress(tool_definition['configuration_folder'])
 
-        notebook_push_path = expect_variable('notebook_push_path', '')
-        if notebook_push_path:
-            check_call([notebook_push_path])
-
         response = requests.post(server_url + '/tools.json', headers={
             'Authorization': 'Bearer ' + server_token,
         }, data={
@@ -145,6 +155,7 @@ def get_configuration_path():
 
 def load_jupyter_server_extension(notebook_app):
     base_url = notebook_app.base_url
+    backup_url = get_extension_url(base_url, 'backup')
     configure_url = get_extension_url(base_url, 'configure')
     preview_url = get_extension_url(base_url, 'preview')
     deploy_url = get_extension_url(base_url, 'deploy')
@@ -156,10 +167,16 @@ def load_jupyter_server_extension(notebook_app):
     # Configure routes
     host_pattern = r'.*$'
     if notebook_app.password:
-        for x in ConfigurationUpdateJson, ToolPreviewJson, ToolDeployJson:
+        for x in [
+            NotebookBackupJson,
+            ConfigurationUpdateJson,
+            ToolPreviewJson,
+            ToolDeployJson,
+        ]:
             x.post = web.authenticated(x.post)
     web_app = notebook_app.web_app
     web_app.add_handlers(host_pattern, [
+        (backup_url + '.json', NotebookBackupJson),
         (configure_url + '.json', ConfigurationUpdateJson),
         (preview_url + '.json', ToolPreviewJson),
         (deploy_url + '.json', ToolDeployJson),

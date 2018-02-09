@@ -10,6 +10,31 @@ define([
 	var keyboard_manager = jupyter.keyboard_manager;
 	notebook = jupyter.notebook;
 
+  function backup_notebook() {
+
+    show_modal('Starting backup...', 'Please be patient.');
+    notebook.events.one('notebook_saved.Notebook', function() {
+      $.ajax({
+        method: 'post',
+        url: notebook.base_url + 'extensions/crosscompute/backup.json',
+        data: {'_xsrf': get_cookie('_xsrf')}
+      }).fail(function(jqXHR) {
+        switch(jqXHR.status) {
+          case 501:
+            show_modal('Notebook backup available only on website', '<p>Notebook backup only works on the <a href="https://crosscompute.com" target="_blank">CrossCompute Website</a>.</p>');
+            break;
+          case 503:
+            show_modal('Notebook backup failed', '<p>This service is temporarily unavailable. Please try again in a few minutes.</p>');
+            break;
+        }
+      }).done(function(d) {
+        show_modal('Notebook backup succeeded', '<p><a href="X" target="_blank">Click here to see your notebook</a>.</p>'.replace('X', d.notebook_url));
+      });
+    });
+    notebook.save_notebook();
+
+  }
+
   function preview_tool() {
     process_notebook('preview', 'preview');
   }
@@ -122,6 +147,13 @@ define([
   function load_ipython_extension() {
     var actions = keyboard_manager.actions;
     var shortcuts = keyboard_manager.command_shortcuts;
+
+    var backup_notebook_action_name = actions.register({
+      'icon': 'fa-paper-plane-o',
+      'help': 'backup notebook',
+      'help_index': 'crosscompute-backup',
+      'handler': backup_notebook
+    }, 'notebook-backup', 'crosscompute');
     var preview_tool_action_name = actions.register({
       'icon': 'fa-paper-plane-o',
       'help': 'preview tool',
@@ -139,6 +171,7 @@ define([
     shortcuts.add_shortcut('Shift-C,Shift-D', deploy_tool_action_name);
 
     jupyter.toolbar.add_buttons_group([
+      backup_notebook_action_name,
       preview_tool_action_name,
       deploy_tool_action_name
     ]);
