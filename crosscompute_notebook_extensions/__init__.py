@@ -6,11 +6,11 @@ import atexit
 import requests
 from configparser import ConfigParser
 from crosscompute.exceptions import CrossComputeError
-from invisibleroads_macros.disk import compress
+from invisibleroads_macros.disk import compress, make_folder
 from invisibleroads_macros.text import unicode_safely
 from notebook.base.handlers import IPythonHandler
 from notebook.utils import url_path_join
-from os.path import expanduser, join
+from os.path import abspath, expanduser, join
 from psutil import process_iter
 from requests.exceptions import ConnectionError
 from signal import SIGINT
@@ -64,7 +64,7 @@ class ToolPreviewJson(IPythonHandler):
         notebook_path = self.get_argument('notebook_path')
         tool_port = S['tool_port']
         process_arguments = [
-            'crosscompute', 'serve', notebook_path,
+            'crosscompute', 'serve', abspath(notebook_path),
             '--host', S['tool_host'],
             '--port', str(tool_port),
             '--base_url', S['tool_base_url'],
@@ -73,8 +73,10 @@ class ToolPreviewJson(IPythonHandler):
             y = expect_variable(x, '')
             if y:
                 process_arguments.extend(('--' + x, y))
-        open(join(gettempdir(), 'preview.sh'), 'wt').write(' '.join(
-            '"%s"' % x for x in process_arguments))
+        open(join(
+            DEBUGGING_FOLDER, 'preview-tool.sh',
+        ), 'wt').write(' '.join((
+            '"%s"' % x if ' ' in x else x) for x in process_arguments))
         process = Popen(process_arguments, stderr=PIPE)
         d = {}
         for x in range(10):
@@ -236,3 +238,7 @@ def _jupyter_server_extension_paths():
     return [{
         'module': 'crosscompute_notebook_extensions',
     }]
+
+
+DEBUGGING_FOLDER = make_folder(join(
+    gettempdir(), 'crosscompute-notebook-extensions'))
