@@ -74,7 +74,7 @@ class ToolPreviewJson(IPythonHandler):
             if y:
                 process_arguments.extend(('--' + x, y))
         open(join(
-            DEBUGGING_FOLDER, 'preview-tool.sh',
+            make_folder(DEBUGGING_FOLDER), 'preview-tool.sh',
         ), 'wt').write(' '.join((
             '"%s"' % x if ' ' in x else x) for x in process_arguments))
         process = Popen(process_arguments, stderr=PIPE)
@@ -240,5 +240,4 @@ def _jupyter_server_extension_paths():
     }]
 
 
-DEBUGGING_FOLDER = make_folder(join(
-    gettempdir(), 'crosscompute-notebook-extensions'))
+DEBUGGING_FOLDER = join(gettempdir(), 'crosscompute-notebook-extensions')
