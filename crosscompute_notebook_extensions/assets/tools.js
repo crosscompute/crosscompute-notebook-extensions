@@ -28,7 +28,7 @@ define([
             break;
         }
       }).done(function(d) {
-        show_modal('Notebook backup succeeded', '<p><a href="X" target="_blank">Click here to see your notebook</a>.</p>'.replace('X', d.notebook_url));
+        show_modal('Notebook backup succeeded', '<p><a href="X" target="_blank">Click here to see your notebook</a>.</p>'.replace(/X/g, d.notebook_url));
       });
     });
     notebook.save_notebook();
@@ -141,7 +141,7 @@ define([
 
   function set_toolbar_button_css(action_name, d) {
     var x = 'button[data-jupyter-action="X"]';
-    $toolbar.find(x.replace('X', action_name)).css(d);
+    $toolbar.find(x.replace(/X/g, action_name)).css(d);
   }
 
   function load_ipython_extension() {
