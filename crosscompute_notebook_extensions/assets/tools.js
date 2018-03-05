@@ -28,7 +28,7 @@ define([
             break;
         }
       }).done(function(d) {
-        show_modal('Notebook backup succeeded', '<p><a href="X" target="_blank">Click here to see your notebook</a>.</p>'.replace(/X/g, d.notebook_url));
+        show_modal('Notebook backup succeeded', '<p><a href="X" target="_blank">Click here to see your notebook</a>.</p>'.replace(/X/g, d.notebook_url + '/-/' + notebook.notebook_path.toLowerCase().replace(/\.ipynb$/, '').replace(/ /g, '-').replace(/_/g, '-')));
       });
     });
     notebook.save_notebook();
