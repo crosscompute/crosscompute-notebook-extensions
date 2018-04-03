@@ -36,17 +36,17 @@ define([
   }
 
   function preview_tool() {
-    process_notebook('preview', 'preview');
+    process_notebook('preview', 'preview', 'Preview');
   }
 
   function deploy_tool() {
     if (notebook.notebook_name == 'Untitled.ipynb') {
       return show_modal('Tool name required', 'Your notebook is Untitled. Please give a name to your notebook. The name of the notebook will become the name of the tool.');
     }
-    process_notebook('deploy', 'deployment');
+    process_notebook('deploy', 'deployment', 'Add');
   }
 
-  function process_notebook(verb, noun) {
+  function process_notebook(verb, noun, action) {
     function render_text(x) {
       return x.replace(/X/g, noun);
     }
@@ -93,6 +93,9 @@ define([
           body += '<p>Its visibility is <b>hidden</b>, which means that only users with the exact url will be able to access the tool. You can choose to make the tool public by clicking the eye icon at the top of the deployed tool. If you make it public, the tool will appear on your profile.</p>';
         }
         show_modal(render_text('Tool X succeeded'), body);
+        if (typeof ga !== 'undefined') {
+          ga('send', 'event', 'Tool', action, d.tool_id);
+        }
       });
     });
     notebook.save_notebook();
