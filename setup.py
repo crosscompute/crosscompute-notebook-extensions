@@ -29,7 +29,7 @@ setup(
         'pytest-runner',
     ],
     install_requires=[
-        'invisibleroads-macros>=0.9.5',
+        'invisibleroads-macros>=0.9.5.1',
         'crosscompute>=0.7.7',
         'crosscompute-types>=0.7.7',
         'configparser',
