@@ -29,9 +29,9 @@ setup(
         'pytest-runner',
     ],
     install_requires=[
-        'invisibleroads-macros>=0.9.4.3',
-        'crosscompute>=0.7.6',
-        'crosscompute-types>=0.7.6',
+        'invisibleroads-macros>=0.9.5',
+        'crosscompute>=0.7.7',
+        'crosscompute-types>=0.7.7',
         'configparser',
         'jinja2',
         'mock',
